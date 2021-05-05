@@ -1,0 +1,18 @@
+\section{Wstęp}
+\paragraph{Dlaczego napisałem ten artykuł?}
+Na przestrzeni lat napotkałem wiele aplikacji które przez nieprawidłowe uporządkowanie zasobów znacznie komplikowały swoją strukturę. Sieć połączeń, i relacji klas wymieniających między sobą instancje-singletony sprawiał, że ja jako czytelnik kodu miałem spory problem określić kiedy zasoby są inicjowane i co jest ich właścicielem (kto jest odpowiedzialny za ich zwalnianie).
+
+Zarządzanie zasobami w \Cpp{} dodatkowo komplikuje brak wsparcia wielowątkowości u zarania języka, a sam język wprowadza pułapki nieznane dla wielu programistów. Na szczęście nowsze standardy poczynając od \Cpp{}11 zaczęły zauważać konieczność wsparcia dla wielowątkowości. W artykule skupię się na \Cpp{}14.
+
+\paragraph{Kto jest targetem?}
+Jeśli nie znasz definicji zasobu, jest to artykuł dla ciebie. Zakładam że zakres artykułu powinien być znany doświadczonym programistom \Cpp.
+
+\paragraph{Jaki jest zakres artykułu?}
+Publikacja omawia metody usystematyzowanego dostępu i inicjacji zasobów współdzielonych. Nie opisuje narzędzi, ani podstaw wielowątkowości.
+
+Opisywane są techniki które wykorzystałem w swojej pracy przy refaktoryzowaniu i czyszczeniu istniejącego kodu dla biblioteki interface'u sieciowego. Są to metody sprawdzone w aplikacjach klasy desktop przy użyciu mechanizmów biblioteki standardowej do kilkudziesięciu watków. Nie będą potuszane rozwiązania dla aplikacji serwerowych, czy o wysokich wymaganiach wydajnościowych w których nie mam doświadczenia. Artykuł nie ma też zastosowania dla problematyki massive-parallelizm.
+
+Artykuł skupia się na czytelności kodu i technik prowadzenia użytkowników kodu do zachowania czytelności. Będą poruszane wątki związane z bezpieczeństwem dostępu, jednak będą one krótkie gdyż można je znaleść w każdej książce z tej tematyki. Wydajność rozwiązań nie będzie poruszana.
+
+\paragraph{Streszczenie}
+W dalszej części przedstawię kod inspirowany stanem zastanym przed refaktoryzacją. Kod będzie popsuty bardziej niż rzeczywisty by ukazać dodatkowe problemy znalezione w innych aplikacjach. Następnie zacznę wskazywać błędy i metodą ewolucyjną zrefaktoryzuję kod wprowadzając kolejne techniki dostępu do zasobów. Na koniec zaprezentuję działający kod inspirowany kodem po refaktoryzacji.

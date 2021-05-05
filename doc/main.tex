@@ -4,11 +4,51 @@
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage{polski}
+\usepackage{titlesec}
+\usepackage{wrapfig}
+\usepackage{listings}
+\usepackage{blindtext}
+\usepackage{xcolor}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.95}
+
+\lstdefinestyle{cpp-style}{
+    backgroundcolor=\color{backcolour},
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\scriptsize,
+    breakatwhitespace=false,
+    breaklines=true,
+    captionpos=b,
+    keepspaces=false,
+    numbers=left,
+    numbersep=1pt,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=2
+}
+
+\newcommand\includeCpp[2]{\lstinputlisting[language=C++,style=cpp-style,title=\smaller\smaller#2]{#1/#2}}
+
+\titleformat{\section}
+  {\normalfont\large\bfseries}{\thesection.}{1em}{}
+\titleformat{\subsection}
+  {\normalfont\normalsize\itshape}{\thesubsection.}{1em}{}
+\titleformat{\subsubsection}
+            {\normalfont\normalsize\itshape}{\thesubsubsection.}{1em}{}
+\titleformat{\paragraph}
+            {\normalfont\normalsize}{\theparagraph.}{.5em}{}
 
 \include{lib/misc}
-\include{lib/personal-data}
+\include{lib/title-page}
 
-\setTitle{Uporządkowany dostęp do zasobów}
+\setTitle{Współdzielenie zasobów}
 \setTitleCatchphrases{\Cpp, Przetwarzanie współbieżne, Struktura programu}
 \setTitlePhoto{images/pizza}
 \setTitleDescription{Artykuł prezentuje wybrane metody dostępu do zasobów w przykładach wzorowanych na kodzie produkcyjnym. Autor omawia problematykę, a następnie wskazuje metody usystematyzowania dostępu do elementów współdzielonych.}
@@ -22,9 +62,14 @@
 \authorDesc {Programista C++ specjalizujący się w wysokopoziomowej komunikacji między usługami sieciowymi. 5 letnie doświadczenie w sterownikach przemysłowych. Od roku pracuje nad systemami konroli kolei.}
 
 \hypersetup{pdfauthor=\getAuthor,pdftitle=\getTitle,pdfpagemode=None,colorlinks=true,linkcolor=black,urlcolor=black}
+
+
 \begin{document}
 \begin{titlepage}
 \maketitle
 \end{titlepage}
-
+\input{content/introduction}
+\input{content/reader-profile}
+\input{content/environment}
+\input{content/problem-desc}
 \end{document}

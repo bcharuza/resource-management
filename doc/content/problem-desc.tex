@@ -1,0 +1,24 @@
+\section{Opis problemu}
+Za punkt wyjścia przyjmiemy spreparowany kod złożony z 3 par plików \code{Logger.hpp/.cpp}, \code{MessageQueue.hpp/.cpp}, \code{CfgReader.hpp/.cpp} i pliku głównego \code{main.cpp}.
+Przykłady są syntezą kodu produkcyjnego zastanego w kilku projektach z którymi pracowałem. 
+
+\paragraph{Logger}
+\includeCpp{../../examples/problem}{Logger.hpp}
+\includeCpp{../../examples/problem}{Logger.cpp}
+Powyższy przykład reprezentuje typowy kod C przełożony na grunt \Cpp{}. Często używane są bezpośrednio funkcje systemowe które nie dają gwarancji bezpieczeństwa lub gwarancja jest zależna od implementacji biblioteki jak \code{vfprintf}. W systemach zgodnych z POSIX funkcje printf są bezpieczne \link{https://pubs.opengroup.org/onlinepubs/9699919799/functions/V2\_chap02.html\#tag\_15\_09}, jednak dla Windows nie spotkałem się z taką gwarancją.
+
+Dla porównania wg. \link{https://isocpp.org/files/papers/p0053r7.pdf} \code{std::cout} zapewnia bezpieczeństwo. Jest to jednak złudne gdyż z moich doświadczeń jest ono zapewnione tylko w obrębie pojedynczej operacji - \code{cout<<A<<B} może już zostać przerwane przez inny proces.
+
+Dostęp do statycznego \code{s\_category} jest potencjalnie bezpieczny (nie licząc zbyt dużego indeksu). Przyczyną jest gwarantowane przez język automatyczne czyszczenie przechowywanych stringów po wyjściu z programu, i dostęp wyłącznie do odczytu - przez co obiekt posiada charakterystykę bardziej wartości niż obiektu. Problem dostępu do \code{s\_category} może wystąpić w tylko jednym przypadku - jeśli użytkownikowi uda się odwołać do obiektu jeszcze przed jego inicjacją - tzn. gdy \code{trace()} zostanie wywołany w kodzie inicjacyjnym w innej jednostce kompilacji, przed ustawieniem wartości \code{s\_category}.
+\paragraph{CfgReader}
+\includeCpp{../../examples/problem}{CfgReader.hpp}
+\includeCpp{../../examples/problem}{CfgReader.cpp}
+Reader opis
+
+\paragraph{MessageQueue}
+\includeCpp{../../examples/problem}{MessageQueue.hpp}
+\includeCpp{../../examples/problem}{MessageQueue.cpp}
+MessageQueue opis
+
+\paragraph{main}
+\includeCpp{../../examples/problem}{main.cpp}
