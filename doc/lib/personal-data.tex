@@ -1,0 +1,46 @@
+\usepackage{multirow,graphicx}
+
+\newcommand\setTitle[1]{\title{#1}\def\titleText{#1}}
+\newcommand\setTitlePhoto[1]{\def\titlePhoto{#1}}
+\newcommand\setTitleDescription[1]{\def\titleDescription{#1}}
+\newcommand\setTitleCatchphrases[1]{\def\titleCatchphrases{#1}}
+\newcommand\setAuthor[1]{\author{#1}\def\authorName{#1}}
+\newcommand\authorPhoto[1]{\def\authorPhoto{#1}}
+\newcommand\authorPosition[1]{\def\authorPosition{#1}}
+\newcommand\authorProject[1]{\def\authorProject{#1}}
+\newcommand\authorWebpage[1]{\def\authorWebpage{#1}}
+\newcommand\authorEmail[1]{\def\authorEmail{#1}}
+\newcommand\authorDesc[1]{\def\authorDesc{#1}}
+
+\newcommand\getAuthor{\authorName}
+\newcommand\getTitle{\titleText}
+\newcommand\getTitleCatchphrases{\titleCatchphrases}
+
+\newcommand\printAuthor{%
+\setlength\tabcolsep{0pt}%
+\begin{tabular}{p{.85\textwidth}p{5\baselineskip}}
+\Large\getAuthor & \multirow{5}{*}{\includegraphics[height=5\baselineskip]{\authorPhoto}}\\
+\footnotesize\authorPosition &\\
+\footnotesize\authorProject & \\
+\footnotesize\authorWebpage & \\
+\footnotesize\mail{\authorEmail} &\\
+\end{tabular}
+}
+\newcommand\printTitle{\center{\mbox{\Huge\bf{\getTitle}}}}
+\newcommand\printCatchphrases{\footnotesize{\getTitleCatchphrases}}
+\newcommand\printTitlePhoto{\includegraphics[width=.8\textwidth]{\titlePhoto}}
+\newcommand\printTitleDescription{\framebox[\linewidth]{%
+\parbox{0.9\linewidth}{\vspace{10pt}\textit{\titleDescription}\vspace{10pt}}%
+}}
+
+\renewcommand\maketitle{\noindent
+\printAuthor
+\rule{\textwidth}{1pt}
+\vspace{2cm}
+\printTitle\\
+\vspace{1cm}
+\center{\printTitlePhoto}\\
+\vspace{1cm}
+\center{\printTitleDescription}\\
+\center{\printCatchphrases}
+}

@@ -1,0 +1,30 @@
+\documentclass[titlepage,twocolumn,a4paper,10pt,fleqn,leqno]{article}
+
+\usepackage{hyperref}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{polski}
+
+\include{lib/misc}
+\include{lib/personal-data}
+
+\setTitle{Uporządkowany dostęp do zasobów}
+\setTitleCatchphrases{\Cpp, Przetwarzanie współbieżne, Struktura programu}
+\setTitlePhoto{images/pizza}
+\setTitleDescription{Artykuł prezentuje wybrane metody dostępu do zasobów w przykładach wzorowanych na kodzie produkcyjnym. Autor omawia problematykę, a następnie wskazuje metody usystematyzowania dostępu do elementów współdzielonych.}
+
+\setAuthor {Bartosz Charuza}
+\authorPhoto {images/author}
+\authorPosition {Regular Software Developer}
+\authorProject {Alstom: Ebiscreen2000}
+\authorWebpage {\link{https://github.com/bcharuza}}
+\authorEmail {bcharuza@yahoo.com}
+\authorDesc {Programista C++ specjalizujący się w wysokopoziomowej komunikacji między usługami sieciowymi. 5 letnie doświadczenie w sterownikach przemysłowych. Od roku pracuje nad systemami konroli kolei.}
+
+\hypersetup{pdfauthor=\getAuthor,pdftitle=\getTitle,pdfpagemode=None,colorlinks=true,linkcolor=black,urlcolor=black}
+\begin{document}
+\begin{titlepage}
+\maketitle
+\end{titlepage}
+
+\end{document}
