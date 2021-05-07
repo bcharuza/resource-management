@@ -1,4 +1,6 @@
-\usepackage{relsize}
+\usepackage{relsize,endnotes}
+
+\newcommand{\note}[2]{#1\endnote{#2}}
 
 \newcommand{\link}[1]{%
   \href{#1}{\underline{#1}}%

@@ -1,11 +1,11 @@
-\section{Wstęp}
+\section{Wstęp}\label{sec:introduction}
 \paragraph{Dlaczego napisałem ten artykuł?}
 Na przestrzeni lat napotkałem wiele aplikacji które przez nieprawidłowe uporządkowanie zasobów znacznie komplikowały swoją strukturę. Sieć połączeń, i relacji klas wymieniających między sobą instancje-singletony sprawiał, że ja jako czytelnik kodu miałem spory problem określić kiedy zasoby są inicjowane i co jest ich właścicielem (kto jest odpowiedzialny za ich zwalnianie).
 
 Zarządzanie zasobami w \Cpp{} dodatkowo komplikuje brak wsparcia wielowątkowości u zarania języka, a sam język wprowadza pułapki nieznane dla wielu programistów. Na szczęście nowsze standardy poczynając od \Cpp{}11 zaczęły zauważać konieczność wsparcia dla wielowątkowości. W artykule skupię się na \Cpp{}14.
 
 \paragraph{Kto jest targetem?}
-Jeśli nie znasz definicji zasobu, jest to artykuł dla ciebie. Zakładam że zakres artykułu powinien być znany doświadczonym programistom \Cpp.
+Jeśli często widzisz kod zaprezentowany w sekcji \ref{sec:problem-desc} i chcesz to zmienić ale nie wiesz jak to jest to artykuł dla Ciebie.
 
 \paragraph{Jaki jest zakres artykułu?}
 Publikacja omawia metody usystematyzowanego dostępu i inicjacji zasobów współdzielonych. Nie opisuje narzędzi, ani podstaw wielowątkowości.

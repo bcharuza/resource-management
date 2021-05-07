@@ -7,7 +7,10 @@ add_executable( problem
   Logger.hpp
   MessageQueue.cpp
   MessageQueue.hpp
+  MessageHandler.hpp
+  MessageHandler.cpp
   main.cpp
+  Subscription.hpp
   )
 
 target_link_libraries(problem PRIVATE Threads::Threads)
