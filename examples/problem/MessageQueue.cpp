@@ -6,10 +6,6 @@
 #include <sstream>
 using namespace std;
 
-void
-Message::set(key_t const& key, val_t const& val)
-{ m_props[key] = val; }
-
 Message::val_t
 Message::get(key_t const& key) const {
   auto it = m_props.find(key);
@@ -47,7 +43,4 @@ void MsgQueue::remove(std::string const& s){
 		    [&s](MessagePtr m){
 		      return m->get("source") == s;});
   m_queue.erase(it);
-}
-MessagePtr MsgQueue::top(){
-  return m_queue.empty() ? nullptr : m_queue.front();
 }

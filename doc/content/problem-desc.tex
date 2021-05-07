@@ -4,7 +4,7 @@ Za punkt wyjścia przyjmiemy spreparowany omówiony poniżej, które można znal
 \paragraph{Logger}
 \includeCpp{../../examples/problem}{Logger.hpp}
 \includeCpp{../../examples/problem}{Logger.cpp}
-Powyższy przykład reprezentuje typowy kod C przełożony na grunt \Cpp{}. Często używane są bezpośrednio funkcje systemowe które nie dają gwarancji bezpieczeństwa lub gwarancja jest zależna od implementacji biblioteki jak \code{vfprintf}. \note{W systemach zgodnych z POSIX funkcje printf są bezpieczne}{\link{https://pubs.opengroup.org/onlinepubs/9699919799/functions/V2\_chap02.html}}, jednak dla Windows nie spotkałem się z taką gwarancją. Używając bibilioteki C trzeba szczególnie zwracać uwagę czy wybrany element jest przystosowany do użycia w środowisku wielowątkowym.
+Powyższy przykład reprezentuje typowy kod C przełożony na grunt \Cpp{}. Często używane są bezpośrednio funkcje systemowe które nie dają gwarancji bezpieczeństwa lub gwarancja jest zależna od implementacji biblioteki jak \code{vfprintf}. \note{W systemach zgodnych z POSIX funkcja printf są bezpieczne jednak ctime już nie musi}{\link{https://pubs.opengroup.org/onlinepubs/9699919799/functions/V2\_chap02.html}}, jednak dla Windows nie spotkałem się z taką gwarancją. Używając bibilioteki C trzeba szczególnie zwracać uwagę czy wybrany element jest przystosowany do użycia w środowisku wielowątkowym.
 
 Dla porównania wg. \note{propozycji p0053r7}{\link{https://isocpp.org/files/papers/p0053r7.pdf}} standard zapewnia bezpieczeństwo dla \code{std::cout}. Jest to jednak złudne gdyż z moich doświadczeń jest ono zapewnione tylko w obrębie pojedynczej operacji - \code{cout<<A<<B} może już zostać przerwane przez inny proces między wywołaniem <<A i <<B.
 
@@ -28,14 +28,18 @@ Struktura \code{Message} jest prostym kontenerem przechowującym dane lokalnie w
 \paragraph{MessageHandler}
 \includeCpp{../../examples/problem}{MessageHandler.hpp}
 \includeCpp{../../examples/problem}{MessageHandler.cpp}
-Przedstawione powyżej struktury próbują stosować skomplikowane techniki dostępu do zasobów z użyciem muteksów. Należy zwrócić uwagę że muteksy są związane z obiektem klasy, co oznacza, że to klasa jest traktowana jako zasób.
+Przedstawione powyżej struktury próbują stosować skomplikowane techniki dostępu do zasobów z użyciem muteksów. Należy zwrócić uwagę że muteksy są związane z obiektem klasy, co oznacza, że to obiekt jest traktowana jako zasób. Jest to generalnie dobre rozwiązanie, które pozwala na utrzymanie spójności obiektu między wywołaniami wielowątkowymi, choć nie uważam je za idealne.
 
-Klasa \code{MQClient} ukazuje względnie poprawne użycie muteksu. Muteks chroni dane które nie zostały nigdy upublicznione poza klasę. Jedyną bolączką tego rozwiązania jest wzajemne blokowanie się \code{send} i \code{receive} pomimo że są niezależne i koniecznośc oprogramowania blokady w każdej z funkcji. Jako, że obiekty MQClient same stają się zasobem należy też usystematyzować który co jest właścicielem danego obiektu, kiedy obietk jest tworzony i zwalniany.
+Klasa \code{MQClient} ukazuje względnie poprawne użycie muteksu. Muteks chroni dane które nie zostały nigdy upublicznione poza obiekt. Jedyną bolączką tego rozwiązania jest wzajemne blokowanie się \code{send} i \code{receive} pomimo że są niezależne i konieczność oprogramowania blokady w każdej z funkcji. Jako, że obiekty MQClient same stają się zasobem należy też usystematyzować który co jest właścicielem danego obiektu, kiedy obietk jest tworzony i zwalniany.
 
-W przypadku \code{MsgHandler} połączenie lokalnego muteksu instancji i metod statycznych tworzy niebezpieczną mieszankę gdzie 2 instancje będą ścigać się o dostęp do elementów udostępnianych przez \code{getSubscriptions()} i \code{getMessageQueue()} i instancji \code{MQClient} pomimo złudnego poczucia bezpieczeństwa związanego z blokowaniem głównego muteksu instancji. Co gorsze, użycie nagiego wskaźnika \code{MQClient*} nie pozwala kontrolować czasu życia obiektu, który musiałby być usunięty w kodzie czyszczącym uruchamianym przed wyjściem z programu.
+W przypadku \code{MsgHandler} połączenie lokalnego muteksu instancji i metod statycznych tworzy niebezpieczną mieszankę gdzie 2 instancje będą ścigać się o dostęp do elementów udostępnianych przez \code{getSubscriptions()} i \code{getMessageQueue()} i instancji \code{MQClient} pomimo złudnego poczucia bezpieczeństwa związanego z blokowaniem głównego muteksu instancji. Co gorsze, użycie nagiego wskaźnika \code{MQClient*} nie pozwala kontrolować czasu życia obiektu, który musiałby być usunięty w kodzie czyszczącym uruchamianym przed wyjściem z programu. Wyścig nie systąpi tylko w jednym przypadku - gdy wątki będą współużytkowały tylko jedną instancję obiektu klasy \code{MsgHandler}. Klasa nie zabezpiecza jednak przed tworzeniem dowolnej ilości obiektów a dane do których dostęp dają metody instancji są współużytkowane - jest to mylące, gdyż użytkownik klasy oczekuje interakcji z danymi lokalnymi a tymczasem zachowanie obiektu może zostać zmienione przez lokalną instancję \code{MsgHandler} innego wątku.
+
+Metoda \code{MsgHandler::NotifyAll} też jest daleka od oczekiwanej. Notyfikacje wymagają sekwencyjnego wykonywania podanych wywołań zwrotnych, a zablokowanie jednego z nich doprowadzi do niepowiadomienia kolejnych. Pomojająć możliwe blokady pewne są też długie czasy wykonania w wątku wywołującym, a pod względem architektury systemu - gęstą sieć powiązań zasobów i korzystających z nich wątków. Co gorsze ewentualne przeniesienie wywołań do osobnego wątku jest spychane na użytkownika klasy.
+
+Należy podjąć jeszcze jedną, trudno uchwytną kwestię. W implementacjach metod może występować niejawne jednoczesne odowałanie do 2 zasobów. Do wywołania \code{trace()} i blokowania muteksu instancji - odwoływanie się do elementów zewnętrznych w trakcie zajęcia zasobu stanowi niebezpieczeństwo zakleszczenia. Podobnie jest z blokowaniem więcej niż jednego muteksu - nawet bezpiecznie wyglądający kod może doprowadzić do zakleszczeń ten zostanie poddany optymalizacjom kompilatora i kolejkowaniu instrukcji procesora. Generalną zasadą jest by kod odwołujący się do blokowanego zasobu był możliwie płytki i blokował dostęp pojedynczym muteksem lub specjalnym wywołaniem \code{std::lock()}.
 \\
 \paragraph{main}
 \includeCpp{../../examples/problem}{main.cpp}
-<< DOPISAĆ MAINA >>\\
 << PRZEROBIĆ OPCJE >>\\
-<< POSKŁADAĆ TO W PROGRAM WIELOWĄTKOWY >>
+<< Zrobić przy dodawaniu/usuwaniu TrainQueue wywołanie NotifyAll >>
+ 

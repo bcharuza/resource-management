@@ -3,6 +3,7 @@
 #include <functional>
 
 class Message;
+using cb_t = std::function<void(Message const&)>;
 
 struct Subscription{
   static uint32_t getId() noexcept{
@@ -10,10 +11,10 @@ struct Subscription{
     return ++id;
   }
   explicit
-  Subscription(std::function<void(Message const&)> cb):
+  Subscription(cb_t cb):
     m_cbFun{cb}, m_id{ getId() }
   {}
-  std::function<void(Message const&)> m_cbFun;
+  cb_t m_cbFun;
   uint32_t m_id;
 };
 #endif /* SUBSCRIPTION_H */

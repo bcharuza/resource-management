@@ -15,8 +15,11 @@ struct Message
 public:
   Message() = default;
   Message(std::string const&);
-  void set(key_t const&,val_t const&);
+  bool empty() const noexcept
+  {return m_props.empty();}
   val_t get(key_t const&) const;
+  void set(key_t const& key,val_t const& val)
+  { m_props[key] = val; }
   std::string str() const;
 private:
   map_t m_props;
@@ -27,7 +30,8 @@ struct MsgQueue
 {
   void insert(MessagePtr m);
   void remove(std::string const& source);
-  MessagePtr top();
+  MessagePtr top() const noexcept
+  {return m_queue.empty() ? nullptr : m_queue.front();}
 private:
   std::vector<MessagePtr> m_queue;
 };
