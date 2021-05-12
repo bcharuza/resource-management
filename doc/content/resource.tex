@@ -1,0 +1,9 @@
+\section{Abstrakcja zasobu}\label{sec:resource}
+Po wielokrotnym napotkaniu przedstawionego wcześniej kodu, zacząłem myśleć jak uprościć życie sobie, i towarzyszom niedoli. Jak sprawić by użytkownik kodu nie musiał zastanawiać się jak, gdzie i po co blokować zasób i pogramować szęśliwie jak wcześniej w stylu jednowątkowym bez trosk i zmartwień wielowątkowej dżungli.
+
+\paragraph{\code{Resource<T>}}
+W poprzednim kodzie błędnie ustalano zakresy muteksów. Zacząłem więc od silnego związania zasobu z zewnętrznym dla niego muteksem. Tak zaprojektowany wrapper sam ściągałby z użytkownika blokowanie i zwalnianie muteksu. Dobrze byłoby też jasno zaznaczyć obszar sekcji krytycznej, by użytkownik szablonu wiedział gdzie musi się pilnować. Aby zagwarantować zwalnianie muteksu po wyrzuceniu wyjątku użyto \code{lock\_guard<>}. 
+\includeCpp{../../examples/resource}{Resource.hpp}
+Klasa jest prosta i skupia się wyłącznie na zajmowaniu zasobu. Inicjacja wrapperu odbywa się transparentnie dla obiektu i nie zakłada dodatkowych zabezpieczeń - wtórca obiektu musi dopilnować, że inicjacja nie będzie przebiegała na globalnej stercie. Dostęp do chronionego obiektu odbywa się za pomocą wizytatora poprzez metodę \code{critical\_section()}.
+
+\paragraph{\code{
