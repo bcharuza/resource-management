@@ -9,5 +9,6 @@ struct CfgReader{
   static std::string s_msgOutput;
 public:
   void LoadCfg(std::string const& file);
+  static int threadId() noexcept;
 };
 #endif /* CFGREADER_H */

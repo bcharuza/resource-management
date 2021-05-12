@@ -18,12 +18,20 @@ string lower(string str){
 void
 CfgReader::LoadCfg(string const& file){
   ifstream ifs {file};
+  if(!ifs.is_open())
+    throw runtime_error("Can't open: "+file);
   map<string,string> cfg;
   string tag,val;
   while((ifs >> tag >> val))
     cfg.emplace(tag,val);
-  s_logTime = lower(cfg["logTime"]) == "enable";
+  s_logTime = lower(cfg["logTime"]) == "true";
   s_sysName = cfg["sysName"];
   s_msgInput = cfg["msgInput"];
   s_msgOutput = cfg["msgOutput"];
+ }
+int
+CfgReader::threadId() noexcept{
+  static int s_counter = 0;
+  static thread_local int s_id = ++s_counter;
+  return s_id;
  }

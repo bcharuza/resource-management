@@ -9,26 +9,34 @@ MQClient*
 MsgHandler::m_client = nullptr;
 
 MQClient::MQClient(string in, string out):
-  m_in{ new ifstream{in}},
-  m_out{ new ofstream{out}}
-{ }
+  m_in{ in.empty() ? nullptr : new ifstream{in}},
+  m_out{ out.empty() ? nullptr : new ofstream{out}}
+{
+  if(m_in && !m_in->is_open())
+    throw runtime_error("Can't open '" + in + "'");
+  if(m_out && !m_out->is_open())
+    throw runtime_error("Can't open '" + out + "'");
+}
 void
 MQClient::send(MessagePtr m){
+  if(!m_out) return;
   MessagePtr result{ new Message };
   std::string msg = m->str();
-  trace(INFO, "Sending: %s", msg);
-  std::lock_guard<mutex> lock{m_mux};
+  trace(INFO, "Sending: %s", msg.c_str());
+  std::lock_guard<mtx_t> lock{m_mux};
   *m_out << msg << endl;
 }
 MessagePtr
 MQClient::receive(){
+  if(!m_in) return MessagePtr{new Message{""}};
   std::string msg;
-  std::lock_guard<mutex> lock{m_mux};
-  if(!(*m_in >> msg) || msg != "[")
-    throw runtime_error("Wrong format");
+  std::lock_guard<mtx_t> lock{m_mux};
+  *m_in >> msg;
+  if(msg.empty()) return MessagePtr{new Message{""}};
+  if(msg != "[") throw runtime_error("Wrong format");
   do msg += m_in->get();
   while(m_in && msg.back() != ']');
-  trace(INFO, "Received: %s", msg);
+  trace(INFO, "Received: %s", msg.c_str());
   return MessagePtr{new Message{msg}};
 }
 MsgHandler::MsgHandler(){
@@ -37,14 +45,14 @@ MsgHandler::MsgHandler(){
 uint32_t
 MsgHandler::addSubscription(Subscription cb){
   Subscription sub {cb};
-  lock_guard<mutex> lock{m_mtxLock};
+  lock_guard<mtx_t> lock{m_mtxLock};
   getSubscriptions().push_back(sub);
-  trace(INFO, "Subscribed: %i", sub.m_id);
+  trace(INFO, "Subscribed: %i", (int)sub.m_id);
   return sub.m_id;
 }
 bool
 MsgHandler::checkSubscription(uint32_t id)const{
-  lock_guard<mutex> lock{m_mtxLock};
+  lock_guard<mtx_t> lock{m_mtxLock};
   auto& subs = getSubscriptions();
   auto it = find_if(subs.begin(),subs.end(),
 		    [id](auto& x){return x.m_id == id;});
@@ -52,19 +60,19 @@ MsgHandler::checkSubscription(uint32_t id)const{
 }
 void
 MsgHandler::removeSubscription(uint32_t id)const{
-  lock_guard<mutex> lock{m_mtxLock};
+  lock_guard<mtx_t> lock{m_mtxLock};
   auto& subs = getSubscriptions();
   auto it = find_if(subs.begin(),subs.end(),
 		    [id](auto& x){return x.m_id == id;});
   if(it != subs.end()){
-    trace(INFO, "Remove Subscription: %i", id);
+    trace(INFO, "Remove Subscription: %i", (int)id);
     subs.erase(it);
   }}
 void
 MsgHandler::NotifyAll(Message const& msg)const{
   trace(INFO, "Enter Notify All");
-  lock_guard<mutex> lock{m_mtxLock};
-  for(auto const& sub : getSubscriptions())
+  lock_guard<mtx_t> lock{m_mtxLock};
+  for(auto& sub : getSubscriptions())
     sub.m_cbFun(msg);
 }
 std::vector<Subscription>&
@@ -79,16 +87,20 @@ MsgHandler::getMessageQueue(){
 }
 void
 MsgHandler::insert(MessagePtr arg) const {
-  lock_guard<mutex> lock{m_mtxLock};
+  lock_guard<mtx_t> lock{m_mtxLock};
+  trace(INFO, "Inserting %s", arg->get("source").c_str());
   getMessageQueue().insert(arg);
+  NotifyAll(*arg);
 }
 MessagePtr
 MsgHandler::top() const{
-    lock_guard<mutex> lock{m_mtxLock};
+    lock_guard<mtx_t> lock{m_mtxLock};
     return getMessageQueue().top();
 }
 void
-MsgHandler::remove(std::string const& msg)const{
-  lock_guard<mutex> lock{m_mtxLock};
-  getMessageQueue().remove(msg);
+MsgHandler::remove(MessagePtr msg)const{
+  lock_guard<mtx_t> lock{m_mtxLock};
+  trace(INFO, "Removing %s", msg->get("source").c_str());
+  getMessageQueue().remove(msg->get("source"));
+  NotifyAll(*msg);
 }

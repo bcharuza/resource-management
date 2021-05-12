@@ -2,34 +2,37 @@
 Za punkt wyjścia przyjmiemy spreparowany omówiony poniżej, które można znaleść w katalogu \code{./examples/problem} \note{projektu}{\link{https://github.com/bcharuza/resource-management/}}. Przykłady są syntezą kodu produkcyjnego zastanego w kilku projektach z którymi pracowałem. 
 
 \paragraph{Logger}
+\code{Logger} reprezentuje typowy kod C przełożony na grunt \Cpp{}.
 \includeCpp{../../examples/problem}{Logger.hpp}
 \includeCpp{../../examples/problem}{Logger.cpp}
-Powyższy przykład reprezentuje typowy kod C przełożony na grunt \Cpp{}. Często używane są bezpośrednio funkcje systemowe które nie dają gwarancji bezpieczeństwa lub gwarancja jest zależna od implementacji biblioteki jak \code{vfprintf}. \note{W systemach zgodnych z POSIX funkcja printf są bezpieczne jednak ctime już nie musi}{\link{https://pubs.opengroup.org/onlinepubs/9699919799/functions/V2\_chap02.html}}, jednak dla Windows nie spotkałem się z taką gwarancją. Używając bibilioteki C trzeba szczególnie zwracać uwagę czy wybrany element jest przystosowany do użycia w środowisku wielowątkowym.
+Często używane są bezpośrednio funkcje systemowe które nie dają gwarancji bezpieczeństwa lub gwarancja jest zależna od implementacji biblioteki jak \code{vfprintf}. \note{W systemach zgodnych z POSIX funkcja printf są bezpieczne jednak ctime już nie musi}{\link{https://pubs.opengroup.org/onlinepubs/9699919799/functions/V2\_chap02.html}}, jednak dla Windows nie spotkałem się z taką gwarancją. Używając bibilioteki C trzeba szczególnie zwracać uwagę czy wybrany element jest przystosowany do użycia w środowisku wielowątkowym.
 
 Dla porównania wg. \note{propozycji p0053r7}{\link{https://isocpp.org/files/papers/p0053r7.pdf}} standard zapewnia bezpieczeństwo dla \code{std::cout}. Jest to jednak złudne gdyż z moich doświadczeń jest ono zapewnione tylko w obrębie pojedynczej operacji - \code{cout<<A<<B} może już zostać przerwane przez inny proces między wywołaniem <<A i <<B.
 
 Dostęp do statycznego \code{s\_category} jest potencjalnie bezpieczny (nie licząc zbyt dużego indeksu). Przyczyną jest gwarantowane przez język automatyczne czyszczenie przechowywanych stringów po wyjściu z programu, i dostęp wyłącznie do odczytu - przez co obiekt posiada charakterystykę bardziej wartości niż obiektu. Problem dostępu do \code{s\_category} może wystąpić w tylko jednym przypadku - jeśli użytkownikowi uda się odwołać do obiektu jeszcze przed jego inicjacją - tzn. gdy \code{trace()} zostanie wywołany w kodzie inicjacyjnym w innej jednostce kompilacji, przed ustawieniem wartości \code{s\_category}.
-\\
+
 \paragraph{CfgReader}
+CfgReader przedstawia enkapsulację konfiguracji programu wewnątrz klasy.
 \includeCpp{../../examples/problem}{CfgReader.hpp}
 \includeCpp{../../examples/problem}{CfgReader.cpp}
-CfgReader przedstawia enkapsulację konfiguracji programu wewnątrz klasy. Tak jak \code{trace()}, CfgReader jest wzorowany na istniejącym kodzie produkcyjnym. Po wczytaniu konfiguracji za pomocą \code{LoadCfg()} aktualizowane są pola statyczne klasy. Największy problem tego rozwiązania stanowi nieokreśloność momentu inicjacji pól statycznych. To że \code{LoadCfg()} powinna być statyczna jest kwestią kosmetyczną. Trudniej zauważyć że przeładowanie konfiguracji nie jest atomowe - w przypadku przeładowania w trakcie działania programu może dojść do dostępu do konfiguracji w stanie niespójnym. Wymusza to na konfiguracji by była inicjowana jak najwcześniej podczas rozruchu aplikacji i by była niezmienia w dalszym ciągu działania programu. Korzystanie z pól statycznych klasy przed wywołaniem \code{LoadCfg()} musi być pilnowane przez programistę. Po raz kolejny sprowadzamy zasób - cetralny rejestr konfiguracji, do zbioru wartości. Nie jesteśmy nawet w stanie kontrolować przypadkowej modyfikacji, ani ograniczyć możliwość dostępu do niezainicjowanych danych.
-\\
+Tak jak \code{trace()}, \code{CfgReader} jest wzorowany na istniejącym kodzie produkcyjnym. Po wczytaniu konfiguracji za pomocą \code{LoadCfg()} aktualizowane są pola statyczne klasy. Największy problem tego rozwiązania stanowi nieokreśloność momentu inicjacji pól statycznych. To że \code{LoadCfg()} powinna być statyczna jest kwestią kosmetyczną. Trudniej zauważyć że przeładowanie konfiguracji nie jest atomowe - w przypadku przeładowania w trakcie działania programu może dojść do dostępu do konfiguracji w stanie niespójnym. Wymusza to na konfiguracji by była inicjowana jak najwcześniej podczas rozruchu aplikacji i by była niezmienia w dalszym ciągu działania programu. Korzystanie z pól statycznych klasy przed wywołaniem \code{LoadCfg()} musi być pilnowane przez programistę. Po raz kolejny sprowadzamy zasób - cetralny rejestr konfiguracji, do zbioru wartości. Nie jesteśmy nawet w stanie kontrolować przypadkowej modyfikacji, ani ograniczyć możliwość dostępu do niezainicjowanych danych.
+
+\code{threadId()} wykorzystuje mechanizm bezpiecznej inicjacji danych statycznych gwarantowanych w \Cpp{}11. Bez względu na ilość wątków wywołujących threadId, inicjacja zmiennej \code{s\_counter} odbędzie się tylko 1 raz w jednym wątku, a następnie będzie użyta do inicjacji lokalnej dla wątku zmiennej statycznej \code{s\_id}
+
 \paragraph{Subscription}
-\includeCpp{../../examples/problem}{Subscription.hpp}
 \code{Subscription} to prosta klasa odpowiedzialna reprezentująca prosty obserwator. Automatyczna inkrementacji identyfikatora jest ukryta wewnątrz funkcji statycznej. Język gwarantuje że statyczna zmienna id będzie zainicjowana przed pierwszym wywołaniem funkcji \code{getId()}. Design byłby poprawny gdyby nie uzależnione od architektury bezpieczeństwo wątków. Standard gwarantuje poprawną propagację informacji dopiero po użyciu wrappera \code{std::atomic<>}.
-\\
+\includeCpp{../../examples/problem}{Subscription.hpp}
+
 \paragraph{MessageQueue}
-\includeCpp{../../examples/problem}{MessageQueue.hpp}
-\includeCpp{../../examples/problem}{MessageQueue.cpp}
 Struktura \code{Message} jest prostym kontenerem przechowującym dane lokalnie w postaci tag-wartość.
 \code{MessageQueue} jest prostą kolejką priorytetową przechowującą wiadomości i identyfikującą je po tagu ``source'' i sortującą po tagu ``prio''. Dane są przechowywane lokalnie, a kod nie wymaga zarządzania dostępem do zasobów.
-\\
+\includeCpp{../../examples/problem}{MessageQueue.hpp}
+\includeCpp{../../examples/problem}{MessageQueue.cpp}
+
 \paragraph{MessageHandler}
+Przedstawione powyżej struktury próbują stosować skomplikowane techniki dostępu do zasobów z użyciem muteksów. Należy zwrócić uwagę że muteksy są związane z obiektem klasy, co oznacza, że to obiekt jest traktowana jako zasób. Jest to generalnie dobre rozwiązanie, które pozwala na utrzymanie spójności obiektu między wywołaniami wielowątkowymi, choć posiada wady o których wspomnę poźniej.
 \includeCpp{../../examples/problem}{MessageHandler.hpp}
 \includeCpp{../../examples/problem}{MessageHandler.cpp}
-Przedstawione powyżej struktury próbują stosować skomplikowane techniki dostępu do zasobów z użyciem muteksów. Należy zwrócić uwagę że muteksy są związane z obiektem klasy, co oznacza, że to obiekt jest traktowana jako zasób. Jest to generalnie dobre rozwiązanie, które pozwala na utrzymanie spójności obiektu między wywołaniami wielowątkowymi, choć nie uważam je za idealne.
-
 Klasa \code{MQClient} ukazuje względnie poprawne użycie muteksu. Muteks chroni dane które nie zostały nigdy upublicznione poza obiekt. Jedyną bolączką tego rozwiązania jest wzajemne blokowanie się \code{send} i \code{receive} pomimo że są niezależne i konieczność oprogramowania blokady w każdej z funkcji. Jako, że obiekty MQClient same stają się zasobem należy też usystematyzować który co jest właścicielem danego obiektu, kiedy obietk jest tworzony i zwalniany.
 
 W przypadku \code{MsgHandler} połączenie lokalnego muteksu instancji i metod statycznych tworzy niebezpieczną mieszankę gdzie 2 instancje będą ścigać się o dostęp do elementów udostępnianych przez \code{getSubscriptions()} i \code{getMessageQueue()} i instancji \code{MQClient} pomimo złudnego poczucia bezpieczeństwa związanego z blokowaniem głównego muteksu instancji. Co gorsze, użycie nagiego wskaźnika \code{MQClient*} nie pozwala kontrolować czasu życia obiektu, który musiałby być usunięty w kodzie czyszczącym uruchamianym przed wyjściem z programu. Wyścig nie systąpi tylko w jednym przypadku - gdy wątki będą współużytkowały tylko jedną instancję obiektu klasy \code{MsgHandler}. Klasa nie zabezpiecza jednak przed tworzeniem dowolnej ilości obiektów a dane do których dostęp dają metody instancji są współużytkowane - jest to mylące, gdyż użytkownik klasy oczekuje interakcji z danymi lokalnymi a tymczasem zachowanie obiektu może zostać zmienione przez lokalną instancję \code{MsgHandler} innego wątku.
@@ -37,9 +40,45 @@ W przypadku \code{MsgHandler} połączenie lokalnego muteksu instancji i metod s
 Metoda \code{MsgHandler::NotifyAll} też jest daleka od oczekiwanej. Notyfikacje wymagają sekwencyjnego wykonywania podanych wywołań zwrotnych, a zablokowanie jednego z nich doprowadzi do niepowiadomienia kolejnych. Pomojająć możliwe blokady pewne są też długie czasy wykonania w wątku wywołującym, a pod względem architektury systemu - gęstą sieć powiązań zasobów i korzystających z nich wątków. Co gorsze ewentualne przeniesienie wywołań do osobnego wątku jest spychane na użytkownika klasy.
 
 Należy podjąć jeszcze jedną, trudno uchwytną kwestię. W implementacjach metod może występować niejawne jednoczesne odowałanie do 2 zasobów. Do wywołania \code{trace()} i blokowania muteksu instancji - odwoływanie się do elementów zewnętrznych w trakcie zajęcia zasobu stanowi niebezpieczeństwo zakleszczenia. Podobnie jest z blokowaniem więcej niż jednego muteksu - nawet bezpiecznie wyglądający kod może doprowadzić do zakleszczeń ten zostanie poddany optymalizacjom kompilatora i kolejkowaniu instrukcji procesora. Generalną zasadą jest by kod odwołujący się do blokowanego zasobu był możliwie płytki i blokował dostęp pojedynczym muteksem lub specjalnym wywołaniem \code{std::lock()}.
-\\
+
 \paragraph{main}
+Main wskazuje przykładowy kod programu. Dobrym ćwiczeniem dla czytelnika byłoby wskazanie kilku poważnych błędów zwązanych z nieprawidłowym użyciem przedstawionych uprzednio struktur.
 \includeCpp{../../examples/problem}{main.cpp}
-<< PRZEROBIĆ OPCJE >>\\
-<< Zrobić przy dodawaniu/usuwaniu TrainQueue wywołanie NotifyAll >>
- 
+Podstawowym problemem tego kodu jest to że uprzednie struktury zezwoliły ich użytkownikowi na ich nieprawidłowe użycie. Interface jest nieprawidłowo skonstruowany. Co gorsze po wykonaniu pierwszego testu za pomocą \inlineBash{ctest problem-test1} (lub \inlineBash{<problem-binary> test1.cfg} gdy kompilujemy bez CMake) aplikacja się zawiesza.
+\includeText{../../tests/}{test1.cfg}
+\includeText{../../tests/}{test1-in.txt}
+Zawieszenie się aplikacji jest spowodowane podwójnym zajęciem muteksu klasy. Każda z metod zajmuje muteks instancji by zablokować klasę. W przypadku gdy \code{std::mutex} jest zajmowany poraz 2 w tym samym wątku następuje zakleszczenie. Jest to znacznie trudniejsze do wykrycia gdy muteks jest statyczny, lub co gorsze - współdzielony w pamięci wolnej. Można to rozwiązać zamieniając \code{std::mutex} na \code{std::recursive\_mutex} \note{jednak jego użycie uznaje się za symptom źle zaprojektowanego współdzielenia zasobów}{Anthony Williams ,,Język \Cpp{} i przetwarzanie współbieżne w akcji''} - w skrócie jeśli pozwalamy na zakleszczenie na pojedynczym muteksie, prawdopodobnie kod jest też wrażliwy na zakleszczenie w scenariuszach z wieloma muteksami, a sekcje krytyczne są zbyt rozbudowane.
+
+Podwójne blokowanie można naprawić przez zamianę definicji \inlineCpp{using mtx\_t = std::mutex} na \inlineCpp{using mtx\_t = std::recursive\_mutex} w pliku \code{MessageHandler.hpp}. Kod nadal będzie posiadał wyścig wewnątrz \code{ping\_race()}, ale logi początkowe będą możliwe do odczytania. Wyścig w \code{pingrace()} jest spowodowany umieszczeniem muteksu i zasobów w różnych zakresach - muteks jest lokalny dla instancji, zaś zasoby są współdzielone przez obiekty.
+Po ponownym uruchomieniu testu otrzymamy następujący wynik:
+\begin{itemize}
+\item \code{test1-out.txt}: pusty lub wypełniony tylko początkowymi wiadomościami. Nie widać tego w kodzie - jednak jak opisano wcześniej, globalna instancja \code{s\_handler} i lokalna wątku \code{handler1} wpływają na siebie.
+\item \code{log}: zawiera wiadomość diagnostyczną i zdublowane wiadomości które miały trafić do \code{test1-out.txt}. Dublowanie wiadomości jest także spowodowane tym że \code{sender} został 2-krotnie zasubskrybowany we współdzielonej przestrzeni pomimo że wygląda jakby był zasubskrybowany dla obiektu.
+\item \code{konsola}: Kolejne błędy w kodzie można dostrzec po sprawdzeniu wyjścia konsoli.
+  \begin{itemize}
+  \item \code{((null)[140624307808064])[INFO] Initialized MsgHandler}: trace został wywołany zanim zainicjowano zmienną statyczną \code{CfgReader::s\_sysName}.
+    \item \code{(Sys1[140250092123968])[INFO] msgInput:  śčĄţ} Błędy są spowodowane nieprzekazaniem właściwego typu do trace. Kompilator nie był w stanie tego wychwycić.
+  \end{itemize}
+\end{itemize}
+
+\code{main.cpp} posiada jeszcze jeden błąd trudniejszy do uchwycenia - wyścig instrukcji podczas usuwania elementów kolejki - pomiędzy wywołaniem \code{top()} i \code{remove()} inny proces może też wykonać \code{set()} a wtedy \code{remove()} spowoduje usunięcie wiadomości niebędącej już na szczycie. Jest to spowodowane otwarciem nieformalnej traksakcji -- założeniem że dany proces musi wykonać sekwencję operacji by zmienić stan obiektu -- operacje nie są atomowe.
+
+Na koniec stawiam do przemyślenia kwestie użycia wskaźników w kodzie wielowątkowym:
+\begin{itemize}
+\item Co stanie się po przekazaniu tego samego \code{MessagePtr} do 2 różnych instancji \code{MsgQueue}? czy będzie prawidłowo usunięty? Czy występuje ryzyko podwójnego usunięcia? Czy zliczanie referencji w \code{shared\_ptr} jest bezpieczne? czy jest to wydajne?
+\item Co stanie się gdy kilka wątków zacznie modyfikować wiadomość udostępnianą przez \code{MsgQueue}?
+\item Czy podobne kwestie są aktualne dla \code{weak\_ptr} i \code{unique\_ptr}
+\end{itemize}
+
+\paragraph{podsumowanie problemu}
+W dostępie do zasobów należy uwzględnić następujące kwestie:
+\begin{itemize}
+\item Funkcje biblioteczne i systemowe niewspierające wielowątkowości.
+\item Inicjację zasobu.
+\item Odległość zasobu i blokady.
+\item Wskaźniki i referencje.
+\item Głębokość sekcji krytycznych.
+\item Atomowość sekcji krytycznych.
+\item Zachowanie spójność zasobu między sekcjami krytycznymi.
+\item Unikanie wywołania zewnętrznego kodu wewnątrz sekcji krytycznych.
+\end{itemize}

@@ -1,0 +1,8 @@
+[ source s1
+  prio 1
+  text abcd
+]
+[ source s2
+  prio 2
+  text cdef
+]

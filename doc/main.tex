@@ -34,7 +34,12 @@
     tabsize=2
 }
 
-\newcommand\includeCpp[2]{\lstinputlisting[language=C++,style=cpp-style,title=\smaller\smaller#2]{#1/#2}}
+\newcommand\includeCpp[2]{\noindent\lstinputlisting[language=C++,style=cpp-style,captionpos=t,title=\scriptsize#2]{#1/#2}}
+\newcommand\includeText[2]{\noindent\lstinputlisting[captionpos=t,style=cpp-style,title=\scriptsize#2]{#1/#2}}
+
+\newcommand\inlineBash[1]{[\nobreak\lstinline[language=bash,style=cpp-style,frame=lines]{$> #1}\nobreak]}
+
+\newcommand\inlineCpp[1]{[\nobreak\lstinline[language=C++,style=cpp-style]{#1}\nobreak]}
 
 \titleformat{\section}
   {\normalfont\large\bfseries}{\thesection.}{1em}{}
@@ -42,8 +47,6 @@
   {\normalfont\normalsize\itshape}{\thesubsection.}{1em}{}
 \titleformat{\subsubsection}
             {\normalfont\normalsize\itshape}{\thesubsubsection.}{1em}{}
-\titleformat{\paragraph}
-            {\normalfont\normalsize}{\theparagraph.}{.5em}{}
 
 \include{lib/misc}
 \include{lib/title-page}

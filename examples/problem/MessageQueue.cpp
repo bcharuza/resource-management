@@ -14,10 +14,11 @@ Message::get(key_t const& key) const {
 string Message::str() const {
   string result = "[ ";
   for(auto const& p : m_props)
-    ((result += p.first) += ' ') += p.second;
-  return result += "]";
+    (((result += p.first) += ": ") += p.second)+=';';
+  return result += " ]";
 }
 Message::Message(string const& str){
+  if(str.empty()) return;
   istringstream iss{str};
   if(str.front() != '[' || str.back() != ']')
     throw runtime_error("Wrong message format");
@@ -39,8 +40,8 @@ void MsgQueue::insert(MessagePtr msg){
       });
 }
 void MsgQueue::remove(std::string const& s){
-  auto it = remove_if(m_queue.begin(),m_queue.end(),
-		    [&s](MessagePtr m){
+  auto it = find_if(m_queue.begin(),m_queue.end(),
+		    [&s](MessagePtr const& m){
 		      return m->get("source") == s;});
-  m_queue.erase(it);
+  if(it != m_queue.end()) m_queue.erase(it);
 }

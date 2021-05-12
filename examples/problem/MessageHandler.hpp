@@ -5,17 +5,19 @@
 
 struct MQClient
 {
+  using mtx_t = std::mutex;
   MQClient(std::string in,std::string out);
   void send(MessagePtr);
   MessagePtr receive();
 private:
-  std::mutex m_mux;
-  std::shared_ptr<std::istream> m_in;
-  std::shared_ptr<std::ostream> m_out;
+  mtx_t m_mux;
+  std::shared_ptr<std::ifstream> m_in;
+  std::shared_ptr<std::ofstream> m_out;
 };
 class MsgHandler
 {
-  mutable std::mutex m_mtxLock;
+  using mtx_t = std::mutex;  
+  mutable mtx_t m_mtxLock;
 public:
   MsgHandler();
   void setClient(MQClient* client) noexcept
@@ -29,9 +31,7 @@ public:
 public:
   void insert(MessagePtr arg) const;
   MessagePtr top() const;
-  void remove(std::string const&) const;
-  void remove(MessagePtr msg) const
-  {remove(msg->get("source"));}
+  void remove(MessagePtr msg) const;
 private:
   static std::vector<Subscription>& getSubscriptions();
   static MsgQueue& getMessageQueue();
