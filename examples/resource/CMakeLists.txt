@@ -1,17 +1,17 @@
 find_package(Threads REQUIRED)
 
 add_executable( resource
-  CfgReader.cpp
-  CfgReader.hpp
+  main.cpp
   Logger.cpp
   Logger.hpp
-  MessageHandler.cpp
-  MessageHandler.hpp
   MessageQueue.cpp
   MessageQueue.hpp
-  Resource.hpp
+  MessageHandler.hpp
+  MessageHandler.cpp
   Subscription.hpp
-  main.cpp
+  CfgReader.cpp
+  CfgReader.hpp
+  Resource.hpp
   )
 
 target_link_libraries(resource PRIVATE Threads::Threads)

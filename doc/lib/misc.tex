@@ -1,13 +1,12 @@
-\usepackage{relsize,endnotes}
+\usepackage{relsize,endnotes,xurl,hyperref}
+
+\renewcommand\UrlFont{\rmfamily}
 
 \newcommand{\note}[2]{#1\endnote{#2}}
 
-\newcommand{\link}[1]{%
-  \href{#1}{\underline{#1}}%
-}
-\newcommand{\mail}[1]{%
-  \href{mailto:#1}{\underline{#1}}%
-}
+\newcommand{\link}[1]{\url{#1}}
+
+\newcommand{\mail}[1]{\href{mailto:#1}{#1}}
 
 \newcommand{\Rplus}{\protect\hspace{-.1em}\protect\raisebox{.4ex}{\smaller{\smaller\smaller\textbf{+}}}}
 \newcommand{\Cpp}{\mbox{C\Rplus\Rplus}}

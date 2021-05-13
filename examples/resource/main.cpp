@@ -56,16 +56,17 @@ int main(int argc, char* argv[]) try{
   if(argc != 2)
     throw std::runtime_error("Expected 1 argument with configuration file.");
   trace(INFO, "Load configuration: %s", argv[1]);
-  CfgReader cfg = getGlobalCfg()
-    .critical_section([argv](auto& x){;
-	x.LoadCfg(argv[1]);
-	return x;});
+  CfgReader cfg;
+  cfg.LoadCfg(argv[1]);
   trace(INFO, "logTime: %i", cfg.m_logTime);
   trace(INFO, "msgInput: %s", cfg.m_msgInput);
   trace(INFO, "msgOutput: %s", cfg.m_msgOutput);
   trace(INFO, "sysName: %s", cfg.m_msgOutput);
+  getGlobalCfg()
+    .critical_section([&cfg](auto& x){x = cfg;});
   //Setup s_handler
-  s_handler.setClient(cfg.m_msgInput, cfg.m_msgOutput);
+  s_handler.setClient(cfg.m_msgInput,
+		      cfg.m_msgOutput);
   s_handler.addSubscription(Subscription{sender});
   std::thread t1 (reader);
   std::thread t2 (doDiagnostic);

@@ -1,7 +1,7 @@
 #include "CfgReader.hpp"
 #include "Logger.hpp"
 #include <algorithm>
-#include <cctype>
+#include <fstream>
 #include <map>
 using namespace std;
 

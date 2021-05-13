@@ -1,0 +1,35 @@
+\section{Kwestie otwarte}\label{sec:open-cases}
+
+\paragraph{Wyścig interface'ów}\label{par:interface-race}
+Wrapper \code{Resource} rozwiązuje część najprostszych problemów. Jak jednak rozwiązać możliwy wyścig interface'ów?
+Należy tak projektować interface korzystający z zasobów by ten działał w formie bezstanowej. Jak to rozumieć?
+Kod klienta zasobu nie powinien zakładać stanu obiektu z wywołania poprzedniej sekcji krytycznej. Wyobraźmy sobie następujący scenariusz dla \code{MsgHandler} dla:
+\\msg1 = [prio:0,source:"a",text:"txt1"],
+\\msg2 = [prio:1,source:"b",text:"txt2"],
+\\msg3 = [prio:4,source:"a",text:"txt3"]
+\\\inlineCpp{(t:1) s\_handler.set(msg1)}
+\\\inlineCpp{(t:1) s\_handler.set(msg2)}
+\\\inlineCpp{(t:1) auto msg = s\_handler.top()}
+\\\inlineCpp{(t:2) s\_handler.set(msg3)}
+\\\inlineCpp{(t:1) s\_handler.remove(msg)}
+\\W wyniku nigdy nie odczytamy wiadomości "txt3".
+
+Jak sprawić by t:2 nie weszło między wywołania t:1? Mam na to 2 rady:
+\begin{itemize}
+\item Najlepiej przeprojektować interface tak aby wszystkie jego operacje były atomowe w tym operacje wykonujące wiecej niż 1 czynność, jak pobranie z jednoczesnym usunięciem elementu.
+\item Alternatywnie można Wyprowadzić blokowanie poza klasę \code{MsgHandler} - np. przez wyposażenie jej w publiczną metodę blokującą zwracającą obiekt reprezentujący blokadę.
+\end{itemize}
+
+<<Dać przykład dla obu rozwiązań>>
+
+\paragraph{Wskaźniki do zasobów}
+Obiekty klasy \code{Message} są przekazywane poprzez \code{shared\_ptr} w obrębie całego programu. Rodzi to pewne korzyści ale też problemy związane z naturą tego wskaźnika.
+
+Umieszczenie obiektu we współdzielnej pamięci wolnej automatycznie nadaje mu tożsamość wyrażoną przez adres pamięci którą zajmuje. Przenoszenie obiektu z pamięci wolnej między wątkami jest bardzo tanie i często jest operacją atomową. Tożsamość obiektu jest bardzo przydatna gdy chcemy przeciwdziałać wyścigom interface'u - dla przykładu w paragrafie \ref{par:interface-race} omówiono wyścig który możnabyłoby rozwiązać gdyby \code{remove()} porównywał adres (tożsamość) podanej w argumencie (a wcześniej zwróconej przez \code{top()}) z wiadomościami obecnymi w kolejce. Korzystanie z \code{shared\_ptr} w kodzie wielowątkowym jest bezpieczne pod względem zliczania odniesień i destrukcji przechowywanego obiektu.
+
+Negatywnymi skutkami użycia \code{shared\_ptr} są natomiast większe skomplikowanie kodu, brak jednoznacznie określonego własciciela obiektu, odwołania cykliczne i wycieki pamięci. Nieuważne operowanie wskaźnikami może prowadzić do wyścigów danych.
+Alternatywą dla \code{shared\_ptr} jest \code{unique\_ptr}, który posiada wszystkie zalety wskaźników, bez jednoczesnych problemów związanych z jego współdzieleniem - odpowiada za poprawną destrukcję obiektu jednocześnie gwarantuje że jest jego jedynym właścicielem. Jest to preferowany wskaźnik w kodzie wielowątkowym.
+
+W kodzie przyjęte jest że jedynym właścicielem jest \code{unique\_ptr}, natomiast gołe wskaźniki pobierane za pomocą \code{unique\_ptr.get()} służą tylko odnoszeniu się do obiektu.
+Podobna - bardziej sformalizowana relacja zachodzi między \code{shared\_ptr} a \code{weak\_ptr}, gdzie \code{weak\_ptr} śledzi obiekt przechowywany przez \code{shared\_ptr}.
+\code{weak\_ptr} tak jak gołe wskaźniki nie gwarantują istnienia wskazanego przez nie obiektu, z tą różnicą że \code{weak\_ptr} pozwala sprawdzić czy obiekt jeszcze istnieje.

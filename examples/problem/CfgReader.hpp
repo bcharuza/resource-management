@@ -1,6 +1,6 @@
 #ifndef CFGREADER_H
 #define CFGREADER_H
-#include <fstream>
+#include <string>
 
 struct CfgReader{
   static bool s_logTime;

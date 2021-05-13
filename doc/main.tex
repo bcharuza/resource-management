@@ -1,6 +1,5 @@
 \documentclass[titlepage,twocolumn,a4paper,10pt,fleqn,leqno]{article}
 
-\usepackage{hyperref}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage{polski}
@@ -37,9 +36,9 @@
 \newcommand\includeCpp[2]{\noindent\lstinputlisting[language=C++,style=cpp-style,captionpos=t,title=\scriptsize#2]{#1/#2}}
 \newcommand\includeText[2]{\noindent\lstinputlisting[captionpos=t,style=cpp-style,title=\scriptsize#2]{#1/#2}}
 
-\newcommand\inlineBash[1]{[\nobreak\lstinline[language=bash,style=cpp-style,frame=lines]{$> #1}\nobreak]}
+\newcommand\inlineBash[1]{\colorbox{backcolour}{\lstinline[language=bash,style=cpp-style,frame=lines]{$> #1}}}
 
-\newcommand\inlineCpp[1]{[\nobreak\lstinline[language=C++,style=cpp-style]{#1}\nobreak]}
+\newcommand\inlineCpp[1]{\colorbox{backcolour}{\lstinline[language=C++,style=cpp-style]{#1}}}
 
 \titleformat{\section}
   {\normalfont\large\bfseries}{\thesection.}{1em}{}
@@ -64,7 +63,12 @@
 \authorEmail {bcharuza@yahoo.com}
 \authorDesc {Programista C++ specjalizujący się w wysokopoziomowej komunikacji między usługami sieciowymi. 5 letnie doświadczenie w sterownikach przemysłowych. Od roku pracuje nad systemami konroli kolei.}
 
-\hypersetup{pdfauthor=\getAuthor,pdftitle=\getTitle,pdfpagemode=None,colorlinks=true,linkcolor=black,urlcolor=black}
+\hypersetup{
+  pdfauthor=\getAuthor,
+  pdftitle=\getTitle,
+  pdfpagemode=None,
+  urlbordercolor=black,
+  pdfborderstyle={/S/U/W 0.3}}
 
 
 \begin{document}
@@ -76,6 +80,6 @@
 \input{content/environment}
 \input{content/problem-desc}
 \input{content/resource}
-\onecolumn
+\input{content/open-cases}
 \theendnotes
 \end{document}
