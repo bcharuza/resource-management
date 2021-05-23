@@ -33,3 +33,23 @@ Alternatywą dla \code{shared\_ptr} jest \code{unique\_ptr}, który posiada wszy
 W kodzie przyjęte jest że jedynym właścicielem jest \code{unique\_ptr}, natomiast gołe wskaźniki pobierane za pomocą \code{unique\_ptr.get()} służą tylko odnoszeniu się do obiektu.
 Podobna - bardziej sformalizowana relacja zachodzi między \code{shared\_ptr} a \code{weak\_ptr}, gdzie \code{weak\_ptr} śledzi obiekt przechowywany przez \code{shared\_ptr}.
 \code{weak\_ptr} tak jak gołe wskaźniki nie gwarantują istnienia wskazanego przez nie obiektu, z tą różnicą że \code{weak\_ptr} pozwala sprawdzić czy obiekt jeszcze istnieje.
+
+\paragraph{Funcje systemowe}
+Standard \Cpp{}20 daje wsparcie dla współbieżnych operacji wejścia/wyjścia za pomocą \code{<syncstream>}. Co robić gdy mamy wielokrotne odwołania do \code{std::cout} w całym programie? Można użyć jednej z 2 metod:
+\begin{itemize}
+\item przekazać cały string - operator <{}< jest threadsafe - czyli jeśli przekażemy argument w całości zostanie wyświetlony w całości. Można wspomagać się lokalnym buforem <<przykładowy kod>>
+\item użyć \code{ios\_base::register\_callback()} do synchronizacji i zablokowania muteksu. Działa także dla bibliotek zależnych.
+\end{itemize}
+
+\paragraph{Głębokie sekcje krytyczne}
+Jak zablokować głębokie sekcje krytyczne? W sekcji krytycznej można zastosować asercję sprawdzającą czy nie jesteśmy już w innej sekcji krytycznej \code{Resource<>}. Można to łatwo zaimplementować z pomocą lokalnych zmiennych statycznych. <<przykładowy kod>>
+
+\paragraph{Widoczność sekcji krytycznych}
+Jedną z rzeczy które możnaby poprawić w klasie Resource jest widoczność. \inlineCpp{getGlobalCfg().critical\_section(...)} nie wyróżnia się w kodzie. Można poprawić to na 2 sposoby:
+\begin{itemize}
+\item makro\\
+  \inlineCpp{CRITICAL\_SECTION(getGlobalCfg(),\{ ... \})}
+\item klasa\\
+  \inlineCpp{ResourceRef<CfgReader> res = getGlobalCfg();}\\
+  \inlineCpp{res.critical\_section([](auto const\& x)\{...\})}
+\end{itemize}
