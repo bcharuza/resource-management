@@ -8,8 +8,8 @@
 
 \newcommand{\mail}[1]{\href{mailto:#1}{#1}}
 
-\newcommand{\Rplus}{\protect\hspace{-.1em}\protect\raisebox{.4ex}{\smaller{\smaller\smaller\textbf{+}}}}
-\newcommand{\Cpp}{\mbox{C\Rplus\Rplus}}
+\newcommand{\Rsign}[1]{\protect\hspace{-.15em}\protect\raisebox{.4ex}{\smaller\smaller\smaller\textbf{#1}}}
+\newcommand{\Cpp}[1]{\mbox{C\Rsign{+}\Rsign{+}\protect\hspace{-.15em}#1}}
 
 \makeatletter
 \renewcommand\paragraph{%
@@ -19,4 +19,9 @@
                 {\normalfont\normalsize\bfseries}}
 \makeatother
 
+\newcommand\editNote[2]{#1\textit{\color{red}{<<#2>>}}}
+
 \newcommand\code[1]{\texttt{#1}}
+\newcommand\cname[1]{\code{#1}}
+\newcommand\fname[1]{\code{#1()}}
+\newcommand\tname[1]{\code{#1<>}}
