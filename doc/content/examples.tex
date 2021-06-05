@@ -1,11 +1,11 @@
 \section{Przykłady}\label{sec:examples}
-Wspomniane w sekcji \ref{sec:resource} problemy były przyczyną istniejących już błędów w kodzie który refaktoryzowałem:
+Klasa \tname{Resource} wspomnianą w sekcji \ref{sec:resource} napisałem by zwalczać błędy w istniejącym kodzie:
 \begin{itemize}
-\item brak pokrycia zakresów muteksu i zasobu
-\item długie sekcje krytyczne
+\item brak pokrycia zakresów muteksu i zasobu.
+\item długie sekcje krytyczne.
 \item jednoczesne zajmowanie wielu zasobów -- w tym obsługa operacji I/O.
-\item wyścigi interface'u
-\item brak rozróżnienia kodu bezpiecznego od kodu sekcji krytycznej.
+\item wyścigi interface'u.
+\item rozległe sekcje krytyczne.
 \end{itemize}
 
 \editNote{}{TODO: dalej od tego momentu}

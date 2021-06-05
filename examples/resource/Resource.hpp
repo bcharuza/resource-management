@@ -4,18 +4,13 @@
 
 template<typename T, typename M = std::mutex>
 struct Resource{
-  using value_t = T;
-public:
-  Resource(value_t const& arg): m_value{arg}
-  { }
-  Resource(value_t&& arg):m_value{std::move(arg)}
-  { }
   template <typename... Args>
-  Resource(Args&&... args): m_value{std::forward<Args>(args)...}
+  Resource(Args&&... args):
+    m_value{std::forward<Args>(args)...}
   { }
-  template<typename FunT>
-  decltype(std::declval<FunT>()(std::declval<value_t&>()))
-  critical_section(FunT arg){
+  template<typename F>
+  decltype(std::declval<F>()(std::declval<T&>()))
+  critical_section(F arg){
     std::lock_guard<M> lock{m_mutex};
     return arg(m_value);
   }
@@ -26,6 +21,6 @@ private:
   Resource& operator =(Resource&&) = delete;
 private:
   M m_mutex;
-  value_t m_value;
+  T m_value;
 };
 #endif /* RESOURCE_H */

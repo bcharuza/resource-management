@@ -1,37 +1,35 @@
 \section{Abstrakcja zasobu}\label{sec:resource}
-Dlaczego zasoby sprawiają tyle problemów? Ponieważ są wyjątkowe i w przeciwieństiwe do informacji niepomnażalne. Dla przykładu, ten artykuł można rozesłać do milionów urządzeń bez żadnych strat dla oryginalnej treści, jednak moje odręczne notatki są wyjątkowe, niepotarzalne, a przy próbie przesłania ich do każdego z czytelników prawdopodobnie nigdy nie dotarłyby do ostatniego w kolejce.
+Dlaczego zasoby sprawiają tyle problemów? Ponieważ są wyjątkowe i w przeciwieństiwe do informacji - niepomnażalne. Dla przykładu, ten artykuł można rozesłać do milionów urządzeń bez żadnych strat dla oryginalnej treści - treść będzie nieodróżnialna, jednak moje odręczne notatki są wyjątkowe, niepotarzalne, a przy próbie przesłania ich do każdego z czytelników prawdopodobnie nigdy nie dotarłyby do ostatniego w kolejce.
 
-Dokładnie - w kolejce - przy próbie jednoczesnego dostępu moje notatki skończyłaby nie lepiej niż zdobycz w tradycyjnej corocznej bitwie o karpia. Oczywiście my - programiści - z racji chronicznych niedostatków tkanki mięśniowej jesteśmy zmuszeni do zaniechania brutalnej rywalizacji na rzecz usystematyzowanych regół dostępu. Wg. etykiety czekamy aż zasób będzie dostępny - rezerwujemy go - używamy - i udostępniamy pozostałym gdy skończymy go używać. W skrócie stosujemy mutexy - jest to najpopularniejsza forma synchronizacji dostępu.
+Dokładnie - w kolejce - przy próbie jednoczesnego dostępu moje notatki skończyłaby nie lepiej niż zdobycz w corocznej bitwie o karpia. Oczywiście my - programiści - z racji chronicznych niedostatków tkanki mięśniowej jesteśmy zmuszeni do zaniechania brutalnej rywalizacji na rzecz usystematyzowanych regół dostępu. Wg. etykiety czekamy aż zasób będzie dostępny - rezerwujemy go - używamy - i udostępniamy pozostałym gdy skończymy go używać. W skrócie stosujemy dostęp wykluczający - mutexy.
 
 Łatwo powiedzieć trudniej zrobić. Pomimo że poleca je 9/10 programistów, mutexy posiadają zestaw wad:
 \begin{itemize}
 \item są duże -- std::mutex osiąga 40 bajtów
 \item są na niskim poziomie abstrakcji -- musimy o nich cały czas pamiętać, zawsze i wszędzie.
 \item powodują wzajemne wykluczenie wątków -- łatwo stają się wąskim gardłem aplikacji.
-\item uwielbiają się zakleszczać na wszelkie sposoby i konstelacje.
+\item uwielbiają się zakleszczać na wszelkie możliwe sposoby.
 \end{itemize}
-To wszystko przyćmiewa fakt że muteksy są jak kałasznikow -- proste w obsłudze i wszechstronne. Zrozumienie mechanizmu muteksu zajmuje kilka minut po których świeżo upieczony absolwent może zostać posłany na front walki o informatyzację kraju. My to już wiemy. My jesteśmy weteranami.
+Pomimo powyższych wad posiadają jednak 2 ogromne zalety - są proste w obsłudze i wszechstronne. Zrozumienie mechanizmu muteksu zajmuje kilka minut po których świeżo upieczony absolwent może zostać posłany na front walki o informatyzację kraju.
 
 \paragraph{Resource}
 \tname{Resource} jest krótkim szablonem który obmyśliłem jako metodę systematyzacji zarządzania zasobami przy pomocy muteksów. Szablon powstał na mój własny użytek podczas refaktoryzacji kodu jednej z bibliotek komunikacji sieciowej. Ma on na celu silnie związać zasób z osłaniającym go muteksem, zautomatyzować zajmowanie zasobu i zwalnianie zasobu, i stanowić ramę popychającą użytkownika w kierunku poprawnych metod zarządzania zasobami.
 
 \includeCpp{../../examples/resource}{Resource.hpp}
 
-Kod jest banalny i łatwy do odtworzenia. Odpowiada wyłącznie za 1 rzecz - zarządzanie dostępem do zasobu.
+Kod jest krótki ale wariat. Jest relatywnie łatwy do zrozumienia i odpowiada wyłącznie za 1 rzecz - zarządzanie dostępem do zasobu.
 
-Klasa szablonowa posiada 2 argumenty:
-\begin{itemize}
-\item \cname{T} -- Przechowywany typ zasobu
-\item \cname{M} -- typ mutexu
-\end{itemize}
+Sama klasa szablonowa posiada 2 argumenty \cname{T} -- Przechowywany typ zasobu, i \cname{M} -- typ mutexu.
 
-Dostępne są 3 konstruktory -- przyjmujące obiekt zasobu - rvalue i lvalue, i konstruktor forwardujący. Konstruktory kopiujące i porzypisania są usunięte. Dlaczego je usunąłem? Powody są 3:
+Dostępny jest tylko konstruktor forwardujący - aby zrozumieć tę konstrukcję należy zapoznać się z pojęciami \note{idealnego przekazywania}{\link{https://eli.thegreenplace.net/2014/perfect-forwarding-and-universal-references-in-c}} i tzw. \note{uniwersalnych referencji}{\link{https://www.youtube.com/watch?v=wQxj20X-tIU}} - w skrócie polega to na tym że nasza klasa \tname{Resource} jest wrapperem przezroczystym dla klasy przechowywanej.
+
+Konstruktory kopiujące i porzypisania są jawnie usunięte z 3 powodów:
 \begin{itemize}
 \item Zasób to z definicji coś niereplikowalnego i zajmujacego unikalne miejsce w przestrzeni (rzeczywistej, czy pamięci komputera). Umożliwiając kopiowanie obiektów klasy \tname{Resource} złamałbym oczekiwania definiowane przez nazwę.
-\item Z przyczyn praktycznych -- kopiowanie obiektu muteksu jest niemożliwe, a nawet gdyby było dla customowych muteksów - sprawiałoby to liczne problemy związane ze spójnością stanu muteksu jak i przechowywanego obiektu.
-\item Prostota -- jak zobaczymy w przykładach przechowywanie jednego odwołania do zasobu znacznie upraszcza strukturę programu.
+\item Z przyczyn praktycznych -- kopiowanie obiektu muteksu jest niemożliwe, a nawet gdyby było dla innych muteksów - sprawiałoby to liczne problemy związane ze spójnością stanu muteksu jak i przechowywanego obiektu.
+\item Prostota -- jak zobaczymy w przykładach przechowywanie jednego odwołania co wymusza na użytkowniku zaniechania tworzenia pajęczej sieci powiązań.
 \end{itemize}
 
-Dostęp do obiektu jest realizowane przez jedyną metodę \fname{\tname{critical\_section}}. Nazwa jest starannie dobrana by była odpowiednio długa, treściwa, groźna i odróżniała się od reszty metod. Dostęp odbywa się za pomocą podanego w argumencie wizytatoru który jest wywoływany w postaci sekcji krytycznej - muteks jest automatycznie zajmowany przez \tname{lock\_guard}, tóż przed wejściem wywołaniem argumentu i zwalniany tóż po powrocie. Użycie lock guard gwarantuje zwolnienie także w przypadku wyrzucenia wyjątku. Dodatkową zaletą użycia \tname{lock\_guard} jest możliwość zdefiniowania własnej implementacji dla customowych muteksów, a tym samym brak wymagań stawianych na klasę muteksu.
+Dostęp do obiektu jest realizowany przez akcesor \fname{\tname{critical\_section}}. Nazwa jest starannie dobrana by była odpowiednio długa, treściwa, groźna i odróżniała się od reszty metod. Dostęp odbywa się za pomocą podanego w argumencie wizytatoru który jest wywoływany w postaci sekcji krytycznej - muteks jest automatycznie zajmowany przez \tname{lock\_guard}, tóż przed wejściem wywołaniem argumentu i zwalniany tóż po powrocie. Użycie lock guard gwarantuje zwolnienie także w przypadku wyrzucenia wyjątku. Dodatkową zaletą użycia \tname{lock\_guard} jest możliwość zdefiniowania własnej implementacji dla customowych muteksów, a tym samym brak wymagań stawianych na klasę muteksu.
 
-Przyczyną stworzenia tego prostego szablonu była potrzeba stworzenia interface'u biblioteki wywoływanego w trybie asynchronicznym, gdy każde z wywołań mogło odwoływać się do tego samego zestawu zasobów z czego każde wywołanie mogło operować na więcej niż jednym zaosobie. Ryzyko zakleszczeń i spowolnienia związane ze zbyt długimi sekcjami krytycznymi sprawiły że chciałem usystematyzować rozdział sekcji krytycznych.
+Powodem napisania tego prostego szablonu była potrzeba stworzenia interface'u biblioteki wywoływanego w trybie asynchronicznym, gdy każde z wywołań mogło odwoływać się do tego samego zestawu zasobów z czego każde wywołanie mogło operować na więcej niż jednym zasobie. Ryzyko zakleszczeń i spowolnienia związane ze zbyt długimi sekcjami krytycznymi sprawiły że chciałem usystematyzować rozdział sekcji krytycznych.

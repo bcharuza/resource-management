@@ -1,19 +1,19 @@
 \section{Wstęp}\label{sec:introduction}
 \paragraph{Dlaczego napisałem ten artykuł?}
-Na przestrzeni lat napotkałem wiele aplikacji które były trudne w czytaniu i utrzymaniu. Ten artykuł jest jednym z serii artykułów zawierających propozycje rozwiązań które stosowałem by uprościć strukturę aplikacji z którymi pracowałem.
-W tym artykule skupię się na abstrakcji zasobu, której stosowanie usystematyzowało dostęp do zasobów i uprościło strukturę moich programów.
+Na przestrzeni lat napotkałem wiele aplikacji które były trudne w czytaniu i utrzymaniu. Ten tekst jest jednym z serii artykułów zawierających propozycje rozwiązań które dotychczas stosowałem.
+W dalszej części skupię się na abstrakcji zasobu, którego użycie usystematyzowało dostęp do zasobów i uprościło strukturę moich programów.
 
 \paragraph{Kto jest targetem?}
-Programiści \Cpp{} aplikacji wielowątkowych. Zakładam że czytelnik posiada podstawową znajomość \Cpp{14} i wiedzę z zakresu przetwarzania równoległego z użyciem muteksów biblioteki standardowej.
+Programiści \Cpp{} aplikacji wielowątkowych. Zakładam że czytelnik posiada podstawową znajomość \Cpp{14} i wiedzę z zakresu przetwarzania wielowątkowego z użyciem muteksów biblioteki standardowej.
 
 \paragraph{Jaki jest zakres artykułu?}
-Publikacja prezentuje wzorzec \code{Resource<>} i sposoby korzystania. Omawiane będą też kontrprzykłady, zagadnienia inicjacji i dostępu do zasobów.  Nie opisuję narzędzi, ani podstaw wielowątkowości.
+Publikacja prezentuje wzorzec \tname{Resource} i przypadki użycia. Omawiane będą też kontrprzykłady, zagadnienia inicjacji i dostępu do zasobów.  Nie opisuję narzędzi, ani podstaw wielowątkowości.
 
-Prezentowane metody sprawdzone w aplikacjach klasy desktop przy użyciu mechanizmów biblioteki standardowej do kilkudziesięciu watków. Nie będą potuszane rozwiązania dla aplikacji serwerowych, czy o wysokich wymaganiach wydajnościowych w których nie mam doświadczenia. Artykuł nie ma też zastosowania dla problematyki massive-parallelizm.
+Prezentowane metody sprawdzone są w aplikacjach klasy desktop przy użyciu mechanizmów biblioteki standardowej do kilkudziesięciu watków. Nie będą poruszane rozwiązania dla aplikacji serwerowych, czy o wysokich wymaganiach wydajnościowych w których nie mam doświadczenia. Artykuł nie ma też zastosowania dla problematyki massive-parallelizm.
 
-Artykuł skupia się na czytelności kodu i technik prowadzenia użytkowników kodu do zachowania czytelności. Będą poruszane wątki związane z bezpieczeństwem dostępu, jednak będą one krótkie gdyż można je znaleść w każdej książce z tej tematyki. Wydajność rozwiązań nie będzie poruszana.
+Artykuł skupia się na czytelności kodu i technik zachęcających użytkowników kodu do zachowania czytelności. Bezpieczeństwo będzie poruszane tylko w ramach danych przykładów i nie omawiane kompleksowo. Wydajność rozwiązań nie będzie poruszana.
 
 \paragraph{Struktura artykułu}
-Próbowałem napisać ten artykuł w standardowej akademickiej strukturze problem-analiza-rozwiązanie. Skutkowało to zbyt rozciągłą formą wraz dojściem nowych wątków i przypadków szczególnych.
+Próbowałem napisać ten artykuł w standardowej akademickiej strukturze problem-analiza-rozwiązanie. Skutkowało to zbyt rozciągłą formą wraz dojściem nowych wątków, dywagacji i przypadków szczególnych.
 
 Zdecydowałem się zastosować formułę rozwiązanie-zastosowanie, gdzie zastosowanie jest podzielone na krótkie pary kontrprzykład-przykład. Mam nadzieję że pozwoli to zredukować rozmiar do minimum i pozwoli dotrwać czytelnikowi do końca artykułu.
