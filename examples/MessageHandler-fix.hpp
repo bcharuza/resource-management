@@ -1,7 +1,7 @@
 #ifndef MESSAGEHANDLER_H
 #define MESSAGEHANDLER_H
 #include "Logger.hpp"
-#include "resource/Resource.hpp"
+#include "Resource.hpp"
 #include <fstream>
 #include <functional>
 #include <map>

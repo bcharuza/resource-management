@@ -1,8 +1,5 @@
 option(BUILD_TEST "Build tests" ON)
 
-add_subdirectory(problem)
-add_subdirectory(resource)
-
 find_package(Threads REQUIRED)
 
 add_library( example STATIC
@@ -22,6 +19,7 @@ add_library( example-fix STATIC
   Logger-fix.hpp
   MessageHandler-fix.cpp
   MessageHandler-fix.hpp
+  Resource.hpp
   )
 target_link_libraries(example-fix PRIVATE Threads::Threads)
 

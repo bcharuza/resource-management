@@ -1,6 +1,6 @@
 #ifndef CFGREADER_H
 #define CFGREADER_H
-#include "resource/Resource.hpp"
+#include "Resource.hpp"
 #include <string>
 #include <map>
 inline
