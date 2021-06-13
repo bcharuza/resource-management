@@ -1,6 +1,7 @@
 #ifndef LOGGER_H
 #define LOGGER_H
 #include <sstream>
+#include <iostream>
 extern void trace_sysinfo(std::ostream& oss);
 template<typename T>
 void trace_print(std::ostream& o,T const& a){
@@ -19,10 +20,11 @@ namespace {
   }
 }
 template<typename... A> inline
-void trace(std::ostream& out, A const&...args){
+void trace(A const&...args){
   std::ostringstream oss;
   trace_sysinfo(oss);
-  trace_impl(args...);
-  out<<oss.str();
+  trace_impl(oss,args...);
+  oss<<'\n';
+  std::cout<<oss.str()<<std::flush;
 }
 #endif /* LOGGER_H */

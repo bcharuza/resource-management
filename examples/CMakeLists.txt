@@ -10,7 +10,8 @@ add_library( example STATIC
   MessageHandler.cpp
   MessageHandler.hpp
   )
-target_link_libraries(example PRIVATE Threads::Threads)
+target_link_libraries(example PUBLIC Threads::Threads)
+target_include_directories(example PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 add_library( example-fix STATIC
   CfgReader-fix.cpp
@@ -21,5 +22,5 @@ add_library( example-fix STATIC
   MessageHandler-fix.hpp
   Resource.hpp
   )
-target_link_libraries(example-fix PRIVATE Threads::Threads)
-
+target_link_libraries(example-fix PUBLIC Threads::Threads)
+target_include_directories(example-fix PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

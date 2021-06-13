@@ -3,16 +3,22 @@
 using namespace std;
 //MQClient
 MQClient::MQClient(string const& name):
-  m_out{name}, m_name{name}
+  m_in{name+".in"}, m_out{name+".out"}, m_name{name}
 {}
 void MQClient::setHandler(MsgHandler* handler){
   m_handler = handler;
 }
 void MQClient::send(MessagePtr const& msg){
-  m_out<<msg->text<<endl;
+  if(msg) m_out<<msg->text<<endl;
 }
-void MQClient::receive(MessagePtr const& msg){
+bool MQClient::receive(){
+  auto msg = make_shared<Message>();
+  if(!msg || !m_in.good()) return false;
+  m_in >> msg->prio;
+  getline(m_in, msg->text);
+  if(!msg || !m_in.good()) return false;
   if(m_handler) m_handler->insert(msg);
+  return true;
 }
 //Subscription
 Subscription::Subscription(cb_t cb):
@@ -63,7 +69,7 @@ void MsgHandler::insert(MessagePtr arg)const{
 }
 bool MsgHandler::isEmpty()const{
   lock_guard<mtx_t> lock{m_mtxLock};
-  return getMessageQueue().top() != nullptr;
+  return getMessageQueue().top() == nullptr;
 }
 void MsgHandler::sendTop()const{
   lock_guard<mtx_t> lock{m_mtxLock};
@@ -80,8 +86,6 @@ MsgQueue& MsgHandler::getMessageQueue(){
   return m_subs;
 }
 void MsgHandler::NotifyAll(Message const& msg) const{
-  lock_guard<mtx_t> lock{m_mtxLock};
   for(auto& sub : getSubscriptions())
     sub.m_cbFun(msg);
 }
-

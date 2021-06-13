@@ -17,7 +17,7 @@ accessMsgHandler(string const& n){
 	return it == x.end()? nullptr : it->second;
 	});
 }
-void registerMsgHandler(string n){
+void setupMsgHandler(string const& n){
   if(auto i = make_unique<Resource<MsgHandler>>())
     return getMsgHandlerMap()
       .critical_section([&n,&i](auto& x){;
@@ -25,7 +25,7 @@ void registerMsgHandler(string n){
 }
 //MQClient
 MQClient::MQClient(string const& name):
-  m_out{name}, m_name{name}
+  m_in{name+".in"},m_out{name+".out2"}, m_name{name}
 {}
 void MQClient::setHandler(string const& handler){
   m_mux = accessMsgHandler(handler);
@@ -33,13 +33,20 @@ void MQClient::setHandler(string const& handler){
     m_mux->critical_section([this](auto& x){;
 	x.setOutput(this);});
 }
+
 void MQClient::send(MessagePtr const& msg){
-  m_out<<msg->text<<endl;
+  if(msg) m_out<<msg->text<<endl;
 }
-void MQClient::receive(MessagePtr const& msg){
+bool MQClient::receive(){
+  auto msg = make_shared<Message>();
+  if(!msg || !m_in.good()) return false;
+  m_in >> msg->prio;
+  getline(m_in, msg->text);
+  if(!msg || !m_in.good()) return false;
   if(m_mux)
     m_mux->critical_section([&msg](auto& x){;
 	x.insert(msg);});
+  return true;
 }
 //MsgQueue
 void MsgQueue::insert(MessagePtr const& msg){
@@ -78,7 +85,7 @@ void MsgHandler::insert(MessagePtr const& arg){
   NotifyAll(*arg);
 }
 bool MsgHandler::isEmpty()const{
-  return m_queue.top() != nullptr;
+  return m_queue.top() == nullptr;
 }
 void MsgHandler::sendTop(){
   if(!m_client) return;

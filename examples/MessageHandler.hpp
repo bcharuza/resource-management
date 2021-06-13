@@ -16,9 +16,10 @@ struct MQClient {
   MQClient(std::string const&);
   void setHandler(MsgHandler*);
   void send(MessagePtr const&);
-  void receive(MessagePtr const&);
+  bool receive();
 private:
   MsgHandler* m_handler = nullptr;
+  std::ifstream m_in;
   std::ofstream m_out;
   std::string m_name;
 };

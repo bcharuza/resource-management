@@ -1,6 +1,5 @@
 #ifndef MESSAGEHANDLER_H
 #define MESSAGEHANDLER_H
-#include "Logger.hpp"
 #include "Resource.hpp"
 #include <fstream>
 #include <functional>
@@ -13,16 +12,17 @@ struct Message{
   std::string text;
 };
 std::shared_ptr<Resource<MsgHandler>> accessMsgHandler(std::string const&);
-void initializeMsgHandler(std::string);
+void setupMsgHandler(std::string const&);
 
 using MessagePtr = std::shared_ptr<Message>;
 struct MQClient {
   MQClient(std::string const&);
   void setHandler(std::string const&);
   void send(MessagePtr const&);
-  void receive(MessagePtr const&);
+  bool receive();
 private:
   std::shared_ptr<Resource<MsgHandler>> m_mux;
+  std::ifstream m_in;
   std::ofstream m_out;
   std::string m_name;
 };
