@@ -9,8 +9,7 @@ struct Resource{
     m_value{std::forward<Args>(args)...}
   { }
   template<typename F>
-  decltype(std::declval<F>()(std::declval<T&>()))
-  critical_section(F arg){
+  auto critical_section(F&& arg){
     std::lock_guard<M> lock{m_mutex};
     return arg(m_value);
   }

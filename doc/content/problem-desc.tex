@@ -1,45 +1,5 @@
 \section{Opis problemu}\label{sec:problem-desc}
-Za punkt wyjścia przyjmiemy spreparowany omówiony poniżej, które można znaleść w katalogu \code{./examples/problem} \note{projektu}{\link{https://github.com/bcharuza/resource-management/}}. Przykłady są syntezą kodu produkcyjnego zastanego w kilku projektach z którymi pracowałem. 
-
-\paragraph{Logger}
-\code{Logger} reprezentuje typowy kod C przełożony na grunt \Cpp{}.
-\includeCpp{../../examples/problem}{Logger.hpp}
-\includeCpp{../../examples/problem}{Logger.cpp}
-Często używane są bezpośrednio funkcje systemowe które nie dają gwarancji bezpieczeństwa lub gwarancja jest zależna od implementacji biblioteki jak \code{vfprintf}. \note{W systemach zgodnych z POSIX funkcja printf są bezpieczne jednak ctime już nie musi}{\link{https://pubs.opengroup.org/onlinepubs/9699919799/functions/V2\_chap02.html}}, jednak dla Windows nie spotkałem się z taką gwarancją. Używając bibilioteki C trzeba szczególnie zwracać uwagę czy wybrany element jest przystosowany do użycia w środowisku wielowątkowym.
-
-Dla porównania wg. \note{propozycji p0053r7}{\link{https://isocpp.org/files/papers/p0053r7.pdf}} standard zapewnia bezpieczeństwo dla \code{std::cout}. Jest to jednak złudne gdyż z moich doświadczeń jest ono zapewnione tylko w obrębie pojedynczej operacji - \code{cout<<A<<B} może już zostać przerwane przez inny proces między wywołaniem <<A i <<B.
-
-Dostęp do statycznego \code{s\_category} jest potencjalnie bezpieczny (nie licząc zbyt dużego indeksu). Przyczyną jest gwarantowane przez język automatyczne czyszczenie przechowywanych stringów po wyjściu z programu, i dostęp wyłącznie do odczytu - przez co obiekt posiada charakterystykę bardziej wartości niż obiektu. Problem dostępu do \code{s\_category} może wystąpić w tylko jednym przypadku - jeśli użytkownikowi uda się odwołać do obiektu jeszcze przed jego inicjacją - tzn. gdy \code{trace()} zostanie wywołany w kodzie inicjacyjnym w innej jednostce kompilacji, przed ustawieniem wartości \code{s\_category}.
-
-\paragraph{CfgReader}
-CfgReader przedstawia enkapsulację konfiguracji programu wewnątrz klasy.
-\includeCpp{../../examples/problem}{CfgReader.hpp}
-\includeCpp{../../examples/problem}{CfgReader.cpp}
-Tak jak \code{trace()}, \code{CfgReader} jest wzorowany na istniejącym kodzie produkcyjnym. Po wczytaniu konfiguracji za pomocą \code{LoadCfg()} aktualizowane są pola statyczne klasy. Największy problem tego rozwiązania stanowi nieokreśloność momentu inicjacji pól statycznych. To że \code{LoadCfg()} powinna być statyczna jest kwestią kosmetyczną. Trudniej zauważyć że przeładowanie konfiguracji nie jest atomowe - w przypadku przeładowania w trakcie działania programu może dojść do dostępu do konfiguracji w stanie niespójnym. Wymusza to na konfiguracji by była inicjowana jak najwcześniej podczas rozruchu aplikacji i by była niezmienia w dalszym ciągu działania programu. Korzystanie z pól statycznych klasy przed wywołaniem \code{LoadCfg()} musi być pilnowane przez programistę. Po raz kolejny sprowadzamy zasób - cetralny rejestr konfiguracji, do zbioru wartości. Nie jesteśmy nawet w stanie kontrolować przypadkowej modyfikacji, ani ograniczyć możliwość dostępu do niezainicjowanych danych.
-
-\code{threadId()} wykorzystuje mechanizm bezpiecznej inicjacji danych statycznych gwarantowanych w \Cpp{11}. Bez względu na ilość wątków wywołujących threadId, inicjacja zmiennej \code{s\_counter} odbędzie się tylko 1 raz w jednym wątku, a następnie będzie użyta do inicjacji lokalnej dla wątku zmiennej statycznej \code{s\_id}
-
-\paragraph{Subscription}
-\code{Subscription} to prosta klasa odpowiedzialna reprezentująca prosty obserwator. Automatyczna inkrementacji identyfikatora jest ukryta wewnątrz funkcji statycznej. Język gwarantuje że statyczna zmienna id będzie zainicjowana przed pierwszym wywołaniem funkcji \code{getId()}. Design byłby poprawny gdyby nie uzależnione od architektury bezpieczeństwo wątków. Standard gwarantuje poprawną propagację informacji dopiero po użyciu wrappera \code{std::atomic<>}.
-\includeCpp{../../examples/problem}{Subscription.hpp}
-
-\paragraph{MessageQueue}
-Struktura \code{Message} jest prostym kontenerem przechowującym dane lokalnie w postaci tag-wartość.
-\code{MessageQueue} jest prostą kolejką priorytetową przechowującą wiadomości i identyfikującą je po tagu ``source'' i sortującą po tagu ``prio''. Dane są przechowywane lokalnie, a kod nie wymaga zarządzania dostępem do zasobów.
-\includeCpp{../../examples/problem}{MessageQueue.hpp}
-\includeCpp{../../examples/problem}{MessageQueue.cpp}
-
-\paragraph{MessageHandler}
-Przedstawione powyżej struktury próbują stosować skomplikowane techniki dostępu do zasobów z użyciem muteksów. Należy zwrócić uwagę że muteksy są związane z obiektem klasy, co oznacza, że to obiekt jest traktowana jako zasób. Jest to generalnie dobre rozwiązanie, które pozwala na utrzymanie spójności obiektu między wywołaniami wielowątkowymi, choć posiada wady o których wspomnę poźniej.
-\includeCpp{../../examples/problem}{MessageHandler.hpp}
-\includeCpp{../../examples/problem}{MessageHandler.cpp}
-Klasa \code{MQClient} ukazuje względnie poprawne użycie muteksu. Muteks chroni dane które nie zostały nigdy upublicznione poza obiekt. Jedyną bolączką tego rozwiązania jest wzajemne blokowanie się \code{send} i \code{receive} pomimo że są niezależne i konieczność oprogramowania blokady w każdej z funkcji. Jako, że obiekty MQClient same stają się zasobem należy też usystematyzować który co jest właścicielem danego obiektu, kiedy obietk jest tworzony i zwalniany.
-
-W przypadku \code{MsgHandler} połączenie lokalnego muteksu instancji i metod statycznych tworzy niebezpieczną mieszankę gdzie 2 instancje będą ścigać się o dostęp do elementów udostępnianych przez \code{getSubscriptions()} i \code{getMessageQueue()} i instancji \code{MQClient} pomimo złudnego poczucia bezpieczeństwa związanego z blokowaniem głównego muteksu instancji. Co gorsze, użycie nagiego wskaźnika \code{MQClient*} nie pozwala kontrolować czasu życia obiektu, który musiałby być usunięty w kodzie czyszczącym uruchamianym przed wyjściem z programu. Wyścig nie systąpi tylko w jednym przypadku - gdy wątki będą współużytkowały tylko jedną instancję obiektu klasy \code{MsgHandler}. Klasa nie zabezpiecza jednak przed tworzeniem dowolnej ilości obiektów a dane do których dostęp dają metody instancji są współużytkowane - jest to mylące, gdyż użytkownik klasy oczekuje interakcji z danymi lokalnymi a tymczasem zachowanie obiektu może zostać zmienione przez lokalną instancję \code{MsgHandler} innego wątku.
-
-Metoda \code{MsgHandler::NotifyAll} też jest daleka od oczekiwanej. Notyfikacje wymagają sekwencyjnego wykonywania podanych wywołań zwrotnych, a zablokowanie jednego z nich doprowadzi do niepowiadomienia kolejnych. Pomojająć możliwe blokady pewne są też długie czasy wykonania w wątku wywołującym, a pod względem architektury systemu - gęstą sieć powiązań zasobów i korzystających z nich wątków. Co gorsze ewentualne przeniesienie wywołań do osobnego wątku jest spychane na użytkownika klasy.
-
-Należy podjąć jeszcze jedną, trudno uchwytną kwestię. W implementacjach metod może występować niejawne jednoczesne odowałanie do 2 zasobów. Do wywołania \code{trace()} i blokowania muteksu instancji - odwoływanie się do elementów zewnętrznych w trakcie zajęcia zasobu stanowi niebezpieczeństwo zakleszczenia. Podobnie jest z blokowaniem więcej niż jednego muteksu - nawet bezpiecznie wyglądający kod może doprowadzić do zakleszczeń ten zostanie poddany optymalizacjom kompilatora i kolejkowaniu instrukcji procesora. Generalną zasadą jest by kod odwołujący się do blokowanego zasobu był możliwie płytki i blokował dostęp pojedynczym muteksem lub specjalnym wywołaniem \code{std::lock()}.
+Za punkt wyjścia przyjmiemy spreparowany omówiony poniżej, które można znaleść w katalogu \code{./examples/problem} \note{projektu}{\link{https://github.com/bcharuza/resource-management/}}. Przykłady są syntezą kodu produkcyjnego zastanego w kilku projektach z którymi pracowałem.
 
 \paragraph{main}
 Main wskazuje przykładowy kod programu. Dobrym ćwiczeniem dla czytelnika byłoby wskazanie kilku poważnych błędów zwązanych z nieprawidłowym użyciem przedstawionych uprzednio struktur.
