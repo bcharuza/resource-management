@@ -1,7 +1,6 @@
 #ifndef RESOURCE_H
 #define RESOURCE_H
 #include <mutex>
-
 template<typename T, typename M = std::mutex>
 struct Resource{
   template <typename... Args>

@@ -18,14 +18,14 @@ accessMsgHandler(string const& n){
 	});
 }
 void setupMsgHandler(string const& n){
-  if(auto i = make_unique<Resource<MsgHandler>>())
+  if(auto i =make_unique<Resource<MsgHandler>>())
     return getMsgHandlerMap()
       .critical_section([&n,&i](auto& x){;
 	  x[n].reset(i.release());});
 }
 //MQClient
-MQClient::MQClient(string const& name):
-  m_in{name+".in"},m_out{name+".out2"}, m_name{name}
+MQClient::MQClient(string const& arg):
+  m_in{arg+".in"},m_out{arg+".out2"},m_name{arg}
 {}
 void MQClient::setHandler(string const& handler){
   m_mux = accessMsgHandler(handler);
@@ -56,18 +56,20 @@ void MsgQueue::insert(MessagePtr const& msg){
 		return l->prio < r->prio;});
 }
 MessagePtr MsgQueue::top() const noexcept{
-  return m_queue.empty() ? nullptr : m_queue.front();
+  return m_queue.empty()
+    ? nullptr : m_queue.front();
 }
 void MsgQueue::popTop(){
   m_queue.erase(m_queue.begin());
 }
 //MsgHandler
-MsgHandler::subid_t MsgHandler::genNewId() noexcept{
+MsgHandler::subid_t
+MsgHandler::genNewId()noexcept{
   static std::atomic<uint32_t> id {0};
   return ++id;
 }
-void MsgHandler::setOutput(MQClient* client) noexcept{
-  m_client = client;
+void MsgHandler::setOutput(MQClient* c)noexcept{
+  m_client = c;
 }
 MsgHandler::subid_t
 MsgHandler::subscribe(cb_t cb){
@@ -92,7 +94,8 @@ void MsgHandler::sendTop(){
   m_client->send(m_queue.top());
   m_queue.popTop();
 }
-void MsgHandler::NotifyAll(Message const& msg) const{
+void
+MsgHandler::NotifyAll(Message const& msg) const{
   for(auto& sub : m_subs)
     sub.second(msg);
 }

@@ -11,27 +11,53 @@
 
 \definecolor{red}{rgb}{1,0,0}
 \definecolor{codegreen}{rgb}{0,0.6,0}
-\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codegray}{rgb}{0.13,0.13,0.13}
 \definecolor{codepurple}{rgb}{0.58,0,0.82}
-\definecolor{backcolour}{rgb}{0.95,0.95,0.95}
+\definecolor{backcolour}{rgb}{1.0,0.98,0.90}
 
 \lstdefinestyle{cpp-style}{
-    backgroundcolor=\color{backcolour},
-    commentstyle=\color{codegreen},
-    keywordstyle=\color{magenta},
-    numberstyle=\tiny\color{codegray},
-    stringstyle=\color{codepurple},
-    basicstyle=\ttfamily\scriptsize,
-    breakatwhitespace=false,
-    breaklines=true,
-    captionpos=b,
-    keepspaces=false,
-    numbers=left,
-    numbersep=1pt,
-    showspaces=false,
-    showstringspaces=false,
-    showtabs=false,
-    tabsize=2
+  %surrounding
+  aboveskip=0mm,
+  belowskip=1mm,
+  captionpos=b,
+  numbers=left,
+  numbersep=0pt,
+  %text-flow
+  breakatwhitespace=false,
+  breaklines=true,
+  keepspaces=false,
+  showspaces=false,
+  showstringspaces=false,
+  showtabs=false,
+  %style
+  backgroundcolor=\color{backcolour},
+  identifierstyle=\color{codegray},
+  commentstyle=\color{gray},
+  numberstyle=\tiny\color{codegray},
+  stringstyle=\color{teal},
+  basicstyle=\ttfamily\scriptsize,
+  moredelim=[l][\color{gray}]{\#define},
+  moredelim=[l][\color{gray}]{\#include},
+  moredelim=[l][\color{gray}]{\#ifndef},
+  moredelim=[l][\color{gray}]{\#endif},
+  moredelim=**[s][\color{brown}]{template<}{>},
+  classoffset=0,
+  morekeywords={noexcept},
+  deletekeywords={int,void,bool,long,short,signed,unsigned,char,float,double},
+  keywordstyle=\color{purple},
+  classoffset=1,
+  morekeywords={int,void,bool,long,short,signed,unsigned,char,float,double},
+  morekeywords={int8\_t,int16\_t,int32\_t,uint8\_t,uint16\_t,uint32\_t,time\_t,va\_list},
+  morekeywords={std,chrono},
+  morekeywords={system\_clock,seconds,minutes,hours,milliseconds,microseconds},
+  morekeywords={atomic,mutex,lock\_guard},
+  morekeywords={string,ostream,istream,ifstream,ofstream,fstream},
+  morekeywords={map,vector,deque},
+  morekeywords={shared\_ptr,unique\_ptr,weak\_ptr,function},
+  morekeywords={cout,cin,cerr,endl,flush},
+  keywordstyle=\color{violet},
+  classoffset=0,
+  tabsize=1
 }
 
 \newcommand\includeCpp[2]{\noindent\lstinputlisting[language=C++,style=cpp-style,captionpos=t,title=\scriptsize#2]{#1/#2}}
@@ -41,12 +67,9 @@
 
 \newcommand\inlineCpp[1]{\colorbox{backcolour}{\lstinline[language=C++,style=cpp-style]{#1}}}
 
-\titleformat{\section}
-  {\normalfont\large\bfseries}{\thesection.}{1em}{}
-\titleformat{\subsection}
-  {\normalfont\normalsize\itshape}{\thesubsection.}{1em}{}
-\titleformat{\subsubsection}
-            {\normalfont\normalsize\itshape}{\thesubsubsection.}{1em}{}
+\titleformat{\section}{\normalfont\large\bfseries}{\thesection.}{1em}{}
+\titleformat{\subsection}{\normalfont\normalsize\itshape}{\thesubsection.}{1em}{}
+\titleformat{\subsubsection}{\normalfont\normalsize\itshape}{\thesubsubsection.}{1em}{}
 
 \include{lib/misc}
 \include{lib/title-page}
@@ -69,7 +92,7 @@
 
 \begin{document}
 \begin{titlepage}
-\maketitle
+  \maketitle
 \end{titlepage}
 \input{content/introduction}
 \input{content/reader-profile}

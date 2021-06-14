@@ -2,8 +2,8 @@
 #include <algorithm>
 using namespace std;
 //MQClient
-MQClient::MQClient(string const& name):
-  m_in{name+".in"}, m_out{name+".out"}, m_name{name}
+MQClient::MQClient(string const& arg):
+  m_in{arg+".in"},m_out{arg+".out"},m_name{arg}
 {}
 void MQClient::setHandler(MsgHandler* handler){
   m_handler = handler;
@@ -33,10 +33,12 @@ void MsgQueue::insert(MessagePtr const& msg){
   m_queue.push_back(msg);
   stable_sort(m_queue.begin(),m_queue.end(),
 	      [](auto const& l,auto const& r){
-		return l->prio < r->prio;});
+		return l->prio < r->prio;
+	      });
 }
 MessagePtr MsgQueue::top() const noexcept{
-  return m_queue.empty() ? nullptr : m_queue.front();
+  return m_queue.empty()
+    ? nullptr : m_queue.front();
 }
 void MsgQueue::popTop(){
   m_queue.erase(m_queue.begin());
@@ -44,8 +46,8 @@ void MsgQueue::popTop(){
 //MsgHandler
 MQClient* MsgHandler::m_client = nullptr;
 
-void MsgHandler::setClient(MQClient* client) noexcept{
-  m_client = client;
+void MsgHandler::setClient(MQClient* c) noexcept{
+  m_client = c;
   m_client->setHandler(this);
 }
 uint32_t
@@ -77,7 +79,8 @@ void MsgHandler::sendTop()const{
   m_client->send(getMessageQueue().top());
   getMessageQueue().popTop();
 }
-vector<Subscription>& MsgHandler::getSubscriptions(){
+vector<Subscription>&
+MsgHandler::getSubscriptions(){
   static vector<Subscription> m_subs;
   return m_subs;
 }
@@ -85,7 +88,8 @@ MsgQueue& MsgHandler::getMessageQueue(){
   static MsgQueue m_subs;
   return m_subs;
 }
-void MsgHandler::NotifyAll(Message const& msg) const{
+void
+MsgHandler::NotifyAll(Message const& msg)const{
   for(auto& sub : getSubscriptions())
     sub.m_cbFun(msg);
 }

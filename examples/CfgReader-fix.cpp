@@ -1,8 +1,7 @@
 #include "CfgReader-fix.hpp"
 #include <fstream>
 using namespace std;
-void
-LoadCfg(string const& file){
+void LoadCfg(string const& file){
   map<string,string> map;
   ifstream ifs {file};
   if(!ifs.is_open())
