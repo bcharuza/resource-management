@@ -1,19 +1,17 @@
 \section{Wstęp}\label{sec:introduction}
 \paragraph{Dlaczego napisałem ten artykuł?}
-Na przestrzeni lat napotkałem wiele aplikacji które były trudne w czytaniu i utrzymaniu. Ten tekst jest jednym z serii artykułów zawierających propozycje rozwiązań które dotychczas stosowałem.
-W dalszej części skupię się na abstrakcji zasobu, którego użycie usystematyzowało dostęp do zasobów i uprościło strukturę moich programów.
+Nie lubię debugować i dbugerów w ogóle. Nie znam gorszego losu, niż debugowanie aplikacji wielowątkowych. Gdy siedząę przed debugerem czuję się jak kot goniący laserową kropkę drwiącego ze mnie absolutu - z tym że kot dobrze się przy tym bawi.
+Pewnego pięknego październikowego ranka dostałem zwrot ,,XYZ czasami nie działa'' to oznaczało, że czeka mnie kilka dni przedniej zabywy - moje autystyczne randez-vous z debugerem i tysiącami linii kodu. Błędem okazało się użycie niewłasciwego muteksu - Straciłem 2 dni życia na prosty błąd. To był punkt przełomowy. Cisnąłem ,,Tak być nie może!'' i przepisałem tę bibliotekę. \note{Frustracja to potężna muza - przykładowo niedziałająca drukarka zmieniła losy świata.}{\link{https://en.wikipedia.org/wiki/Richard\_Stallman\#Events\_leading\_to\_GNU}}
 
-\paragraph{Kto jest targetem?}
-Programiści \Cpp{} aplikacji wielowątkowych. Zakładam że czytelnik posiada podstawową znajomość \Cpp{14} i wiedzę z zakresu przetwarzania wielowątkowego z użyciem muteksów biblioteki standardowej.
+\paragraph{Kto jest adresatem?}
+Programiści \Cpp{}, od juniora który może znaleść inspirację, po seniora który może chcieć wymagać podobnych rozwiązań w swoim projekcie. Zakładam że czytelnik posiada podstawową znajomość \Cpp{14} i wiedzę z zakresu przetwarzania wielowątkowego z użyciem muteksów biblioteki standardowej.
 
 \paragraph{Jaki jest zakres artykułu?}
-Publikacja prezentuje wzorzec \tname{Resource} i przypadki użycia. Omawiane będą też kontrprzykłady, zagadnienia inicjacji i dostępu do zasobów.  Nie opisuję narzędzi, ani podstaw wielowątkowości.
+Publikacja prezentuje wzorzec \tname{Resource} i przypadki użycia. Omawiane będą kontrprzykłady, zagadnienia inicjacji i dostępu do zasobów. Nie opisuję narzędzi, ani podstaw wielowątkowości. Większość poruszanych tematów będzie związana z wykorzystaniem wspomnianego wzorcu.
 
 Prezentowane metody sprawdzone są w aplikacjach klasy desktop przy użyciu mechanizmów biblioteki standardowej do kilkudziesięciu watków. Nie będą poruszane rozwiązania dla aplikacji serwerowych, czy o wysokich wymaganiach wydajnościowych w których nie mam doświadczenia. Artykuł nie ma też zastosowania dla problematyki massive-parallelizm.
-
-Artykuł skupia się na czytelności kodu i technik zachęcających użytkowników kodu do zachowania czytelności. Bezpieczeństwo będzie poruszane tylko w ramach danych przykładów i nie omawiane kompleksowo. Wydajność rozwiązań nie będzie poruszana.
 
 \paragraph{Struktura artykułu}
 Próbowałem napisać ten artykuł w standardowej akademickiej strukturze problem-analiza-rozwiązanie. Skutkowało to zbyt rozciągłą formą wraz dojściem nowych wątków, dywagacji i przypadków szczególnych.
 
-Zdecydowałem się zastosować formułę rozwiązanie-zastosowanie, gdzie zastosowanie jest podzielone na krótkie pary kontrprzykład-przykład. Mam nadzieję że pozwoli to zredukować rozmiar do minimum i pozwoli dotrwać czytelnikowi do końca artykułu.
+Zdecydowałem się zastosować formułę rozwiązanie-zastosowanie, gdzie przypadki użycia są podzielone na krótkie pary kontrprzykład-przykład. Mam nadzieję że pozwoli to zredukować rozmiar do minimum i dotrwać czytelnikowi do końca artykułu.

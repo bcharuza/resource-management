@@ -12,7 +12,6 @@ struct Resource{
     std::lock_guard<M> lock{m_mutex};
     return arg(m_value);
   }
-private:
   Resource(Resource const&) = delete;
   Resource(Resource&&) = delete;
   Resource& operator =(Resource const&) = delete;
