@@ -3,8 +3,9 @@ Klasa \tname{Resource} pomogła mi w zwalczaniu błędów występujących w popr
 \begin{itemize}
 \item brak pokrycia zakresów muteksu i zasobu.
 \item długie sekcje krytyczne.
-\item jednoczesne zajmowanie wielu zasobów -- w tym obsługa operacji I/O.
-\item wyścigi interface'u.
+\item jednoczesne zajmowanie wielu zasobów.
+\item wyścigi danych
+\item \note{wyścigi interface'u}{Anthony Williams ,,Język C++ i przetwarzanie współbieżne w akcji''}
 \end{itemize}
 
 \paragraph{CfgReader}
@@ -13,58 +14,58 @@ Pierwszym przykładem, który chcę omówić jest klasa \cname{CfgReader} -- sil
 \includeCpp{../../examples}{CfgReader.cpp}
 Można zauważyć następujące błędy:
 \begin{itemize}
+\item Pola mogą być odczytywane i zapisywane asynchronicznie doprowadzając do wyścigu danych.
 \item \fname{LoadCfg} ma zakres instancji a modyfikowane pola są statyczne - to mylące i niebezpieczne.
 \item Nie da się określić czy pola zostały zainicjowane czy jeszcze nie.
 \item Przeładowanie konfiguracji nie jest operacją atomową.
 \end{itemize}
-Powyższy kod działał tylko dlatego, że w całym programie występowała tylko jedna instancja, której metoda była wywoływana we wczesnej fazie uruchamiania programu, a cała reszta programu starała się nie korzystać z konfiguracji przed jej załadowaniem -- tylko kto zagwarantuje że faktycznie tak faktycznie robi.
-
-Wymusza to na konfiguracji by była inicjowana jak najwcześniej podczas rozruchu aplikacji i by była niezmienia w dalszym ciągu działania programu. Korzystanie z pól statycznych klasy przed wywołaniem \fname{LoadCfg} musi być pilnowane przez programistę. Po inicjacji konfiguracja nie może być już przeładowana, i jest sprowadzona do zbioru wartości. Nie jesteśmy nawet w stanie kontrolować przypadkowej modyfikacji.
+Powyższy kod wymusza by konfiguracja była inicjowana jak najwcześniej podczas rozruchu aplikacji i by była niezmienia w dalszym ciągu działania programu - nic jednak nie chroni użytkownika przed wielokrotnym wywołaniem \fname{LoadCfg}. Korzystanie z pól statycznych klasy przed wywołaniem \fname{LoadCfg} musi być pilnowane przez programistę. Po inicjacji konfiguracja nie może być już przeładowana, i jest sprowadzona do zbioru wartości. Nie jesteśmy nawet w stanie kontrolować przypadkowej modyfikacji.
 
 Jak użycie \tname{Resource} jest w stanie poprawić kod naszej klasy? 
 
-Załóżmy że jesteśmy leniwymi ludźmi, lub ujmując zgrabniej - minimalistami. Jak poprawić nasz kod niewielkim wysiłkiem?
 \includeCpp{../../examples}{CfgReader-fix.hpp}
 \includeCpp{../../examples}{CfgReader-fix.cpp}
 Co zmieniłem?
-Przeniosłem zarządzanie zasobem na wrapper \tname{Resource} i udostępniam przez funkcję globalną i nic więcej mnie nie interesuje. Dostęp jest kontrolowany wewnętrznie. Mapa jest zajmowana w miejscu użycia, aktualizowana w pojedynczym przypisaniu i momentalnie zwalniana dla reszty wątków.
+Przeniosłem zarządzanie zasobem na wrapper \tname{Resource} i udostępniam przez funkcję globalną. Dostęp jest kontrolowany wewnętrznie. Pola statyczne zmieniłem na mapę - do przechowywania stanów współdzielonych jak konfiguracja mapy sprawdzają się najlepiej.
+
+Funkcja \fname{LoadCfg} otrzymuje dostęp do mapy przez funkcję dostępową \fname{getCfg}, która udostępnia wspomnianą mapę owiniętą wewnątrz \tname{Resource} który odpowiada za synchronizację dostępu. Schemat aktualizacji konfiguracji jest standardowy - tworzymy lokalną strukturę, a następnie przypisujemy ją do zasobu w pojedynczym szybkim przypisaniu ograniczając czas wykonania sekcji krytycznej do minimum.
 
 Dlaczego użyłem funkcji dostępowej zamiast umieścić zasób w zmiennej globalnej?
 Ponieważ standard definiuje kolejność inicjacji zmiennej globalnej w zależności od pierwszeństwa jej wystąpienia, co oznacza że jest ona zależna od kolejności kompilacji/linkowania. Aby to objeść użyłem prostego rozwiązania - funkcji globalnej której pola statyczne muszą być zainicjowane przed jej wywołaniem. Kompilator automatycznie ustali kolejność inicjacji. Dodatkowo pozwala to na prostszą refaktoryzację i testowanie kodu.
 
 \paragraph{Logger}
-\cname{Logger} reprezentuje typowy kod C przełożony na grunt \Cpp{}. Jest to silnie zredukowany przykład wzorowany na popularnych leniwych logerach, często przeplatanych niezależnymi wywołaniami do funkcji wyściowych. Jest to prawdziwy kłopot dla kodu wielowątkowego.
+\cname{Logger} reprezentuje typowy kod C przełożony na grunt \Cpp{}. Jest to silnie zredukowany przykład wzorowany na popularnych leniwych logerach-samoróbkach, często przeplatanych niezależnymi operacjiami wyjściowymi jak \fname{printf}, czy \code{std::cout} w innych miejscach programu. Jest to prawdziwy kłopot dla kodu wielowątkowego.
 \includeCpp{../../examples}{Logger.hpp}
 \includeCpp{../../examples}{Logger.cpp}
-W powyższym kodzie są wykorzystywane funkcje systemowe które nie dają gwarancji bezpieczeństwa lub gwarancja jest zależna od implementacji biblioteki jak \fname{vfprintf}. \note{W systemach zgodnych z POSIX funkcje rodziny printf są bezpieczne, jednak ctime już nie musi}{\link{https://pubs.opengroup.org/onlinepubs/9699919799/functions/V2\_chap02.html}}. Dla Windows nie spotkałem się z taką gwarancją. Używając bibilioteki C trzeba szczególnie zwracać uwagę czy wybrany element jest przystosowany do użycia w środowisku wielowątkowym. Dostęp do konfiguracji jest niechroniony i może powodować liczne błędy wyścigu do danych.
+W powyższym kodzie są wykorzystywane funkcje systemowe które nie dają gwarancji bezpieczeństwa lub gwarancja jest zależna od implementacji biblioteki jak \fname{vfprintf}. \note{W systemach zgodnych z \mbox{POSIX} funkcje rodziny \fname{printf} są bezpieczne, jednak \fname{ctime} już nie musi}{\link{https://pubs.opengroup.org/onlinepubs/9699919799/functions/V2\_chap02.html}}. Dla Windows nie spotkałem się z taką gwarancją. Używając bibilioteki C trzeba szczególnie zwracać uwagę czy wybrany element jest przystosowany do użycia w środowisku wielowątkowym. Dostęp do konfiguracji jest niechroniony i może powodować liczne błędy wyścigu do danych.
 
-Skoro C nie daje gwarancji dla wielowątkowego dostępu do wejścia/wyjścia to może \Cpp{}?
-Dla porównania wg. \note{propozycji p0053r7}{\link{https://isocpp.org/files/papers/p0053r7.pdf}} standard zapewnia bezpieczeństwo dla strumieni wyjściowych takich jak \vname{std::cout}. Bezpieczeństwo jest gwarantowane tylko dla pojedynczej operacji, więc \code{cout<<A<<B} może już zostać przerwane przez inny proces między wywołaniem \code{<<A} i \code{<<B}. Należy też uważać na starsze wersje biblioteki \lib{stdc++}, która mogła niepoprawnie obsługiwać wielowątkowe operacje na obiektach strumieni.
+Jak ta kwestia wygląda w \Cpp{} ?
+Dla porównania wg. \note{propozycji p0053r7}{\link{https://isocpp.org/files/papers/p0053r7.pdf}} standard zapewnia bezpieczeństwo dla strumieni wyjściowych takich jak \vname{std::cout}. Bezpieczeństwo jest gwarantowane tylko dla pojedynczej operacji, więc \code{cout<<A<<B} może zostać przerwane przez inny proces między wywołaniem \code{<\,<A} i \code{<\,<B}. Należy też uważać na starsze wersje biblioteki \lib{stdc++}, która mogła niepoprawnie obsługiwać wielowątkowe operacje na obiektach strumieni.
 
 Spróbujmy przeprojektować powyższy kod, tak by zachować wygodę \fname{vfprintf} i zagwarantować bezpieczeństwo wielowątkowe.
 
 \includeCpp{../../examples}{Logger-fix.hpp}
 \includeCpp{../../examples}{Logger-fix.cpp}
 Co zmieniono?
-Funkcję \fname{\tname{trace}} kompletnie przepisano, tak by używała tylko biblioteki \Cpp{}. Wyświetlenie wiadomości odbywa się w pojedynczym wywołaniu \fname{std::ostream::operator <<} - mamy więc pewność że kod jest bezpieczny ze względu na wątki. Zapełnianie buforu oss odbywa się w pamięci lokalnej więc wszelkie interakcje z zasobem \vname{std::cout} są ograniczone do minimum.
+Funkcję \fname{\tname{trace}} kompletnie przepisałem, tak by używała tylko biblioteki \Cpp{}. Wyświetlenie wiadomości odbywa się w pojedynczym wywołaniu \fname{ostream::operator <\,<} by mieć pewność że wydruk jest bezpieczny ze względu na wątki. Zapełnianie buforu oss odbywa się w pamięci lokalnej, więc wszelkie interakcje z zasobem \vname{std::cout} są ograniczone do minimum.
 
-Funkcję \fname{trace\_sysinfo} jest odpowiedzialna za zapisanie nagłówku wiadomości i przeniesiono ją do pliku .cpp by ograniczyć zależności nagłówka.
+Funkcja \fname{trace\_sysinfo} jest odpowiedzialna za zapisanie nagłówku wiadomości i przeniesiono ją do \file{Logger-fix.cpp} by ograniczyć zależności \file{Logger-fix.hpp}.
 
-Kod \fname{\tname{trace\_impl}} przedstawia rekurencyjne wywołania szablonowe o zmiennej liczbie argumentów. Jest to rozwiąznie dające możliwości variadic functions znanych z C i jednocześnie zachowujących ścisłą kontrolę typów znaną z \Cpp{}. Dodatkowo użytkownik może definiować własne przeciążenia \fname{\tname{trace\_print}} dzięki czemu w prosty sposób można dodać obsługę typów złożonych. Funkcje pomocnicze umieszczono w tzw. anonimowej przestrzeni nazw, by uniemożliwić dostęp do nich spoza pliku.
+\fname{\tname{trace\_impl}} odpowiada za rekurencyjne wywołania szablonowe o zmiennej liczbie argumentów. Jest to rozwiąznie dające możliwości variadic functions znanych z C i jednocześnie zachowujące ścisłą kontrolę typów znaną z \Cpp{}. Dodatkowo użytkownik może definiować własne przeciążenia \fname{\tname{trace\_print}} by dodać własną obsługę typów złożonych. Funkcje pomocnicze umieszczono w tzw. anonimowej przestrzeni nazw, by uniemożliwić dostęp do nich spoza pliku.
 
 Warto zauważyć że dostęp do konfiguracji odbywa się przez \fname{getCfg} atomowo w krótkiej sekcji krytycznej. Obsługa sekcji krytycznej jest niemal niezauważalna dla użytkownika kodu i objawia się użyciem lambdy.
 
 \paragraph{MessageHandler}
-Poniżej przedstawię klasę \cname{MessageHandler} która jest inspirowana klasą z kodu produkcyjnego i przedstawia częste bolączki niewłaściwie zaprojektowanej sieci powiązań.
+Ostatnim przykładem jest klasa \cname{MessageHandler}, która też jest inspirowana kodem produkcyjnym i przedstawia częste bolączki niewłaściwie zaprojektowanego układu klas.
 \includeCpp{../../examples}{MessageHandler.hpp}
 \includeCpp{../../examples}{MessageHandler.cpp}
 W powyższym kodzie klasa \cname{MsgHandler} pełni funkcję centralnej koordynacji przepływu wiadomości. Zawiera jeden globalny interface we/wy \cname{MQClient} z którym związuje się przez wymianę adresów. Już na tym etapie widać pierwszą pułapkę - adres nic nie mówi o czasie życia obiektu i gdy jeden z obiektów przestanie istnieć narażamy się na naruszenie ochrony pamięci. Drugim trudniej zauważalnym problemem jest pełzająca spagettyfikacja kodu - tworzenie takich odniesień 1-1 powoduje że adres zasobu będzie przekazywany między instancjami klienckimi. Modyfikacja i zrozumienie zależności takiego kodu będą z czasem coraz trudniejsze. Aby tego uniknąć zasoby powinny być umieszczane w globalnych repozytoriach.
 
 Co gorsze połączenia wcale nie muszą być symetryczne. Po wielokrotnym wywołaniu \fname{setClient} dla różnych instancji \cname{MsgHandler} otrzymamy wiele instancji \cname{MQClient} wskazujących na różne \cname{MsgHandler}, które z kolei wskazują na ostatnią powiązaną instancję \cname{MQClient}. To nie może skończyć się dobrze.
 
-Poza we/wy klasa \cname{MsgHandler} zarządza także mechanizmem subskrybcji które polegają na wywołaniu callbacku po otrzymaniu nowej wiadomości. Subskrybcje są współdzielone między instancjami \cname{MsgHandler}, a subskrybenci są informowani sekwencyjnie wewnątrz metody \fname{NotifyAll}, która też jest daleka od idału. Notyfikacje wymagają sekwencyjnego wykonywania podanych wywołań zwrotnych w tym samym wątku co kod dodający wiadomość do kolejki, a zablokowanie jednego z nich doprowadzi do niepowiadomienia kolejnych subskrybentów. Pomojając możliwe zakleszczenia powodowane wywołaniem kodu klienckiego pewne są też długie czasy wykonania w wątku wywołującym. Przeniesienie obsługi notyfikacji do osobnego wątku mogłoby poprawić responsywność, jednak jest to obecnie spychane na użytkownika klasy.
+Poza we/wy klasa \cname{MsgHandler} zarządza także mechanizmem subskrybcji które polegają na wywołaniu callbacku po otrzymaniu nowej wiadomości. Subskrybcje są współdzielone między instancjami \cname{MsgHandler}, a subskrybenci są informowani sekwencyjnie wewnątrz metody \fname{NotifyAll}, która też jest daleka od idału. Notyfikacje wymagają sekwencyjnego wykonywania podanych wywołań zwrotnych w tym samym wątku co kod dodający wiadomość do kolejki, a zablokowanie jednego z nich doprowadzi do niepowiadomienia kolejnych subskrybentów. Pomijając możliwe zakleszczenia powodowane wywołaniem kodu klienckiego pewne są też długie czasy wykonania w wątku wywołującym. Przeniesienie obsługi notyfikacji do osobnego wątku mogłoby poprawić responsywność, jednak jest to obecnie spychane na użytkownika klasy.
 
-Ostatnim z obowiązków klasy \cname{MsgHandler} jest zarządzanie kolejką wiadomości która także dzielona między instancjami. Sama klasa \cname{MsgQueue} jest zrealizowana prawidłowo, jednak nie jest ona przystosowana do kodu wielowątkowego. Nie jest to problemem gdyż jest chroniona przez \cname{MsgHandler}, która jednak zezwala na tzw. wyścig interface'u. Wyścig interface'u polega na tym że klasa zakłada niejawną transakcję - tj. że klient musi pamiętać jaki jest stan zasobu między 2 kolejnymi operacjami który może być w międzyczasie zmodyfikowany przez inny wątek. Przykładowo mając 2 wątki \code{A} i \code{B} i współdzielony obiekt \code{MsgHandler x}:
+Ostatnim z obowiązków klasy \cname{MsgHandler} jest zarządzanie kolejką wiadomości która także dzielona między instancjami. Sama klasa \cname{MsgQueue} jest zrealizowana prawidłowo, jednak nie jest ona przystosowana do kodu wielowątkowego. Nie jest to problemem gdyż jest chroniona przez \cname{MsgHandler}, która jednak zezwala na tzw. wyścig interface'u. Wyścig interface'u polega na tym że klasa zakłada niejawną transakcję - tj. że klient musi pamiętać jaki jest stan zasobu między 2 kolejnymi operacjami. Zapamiętany stan może być w międzyczasie zmodyfikowany przez inny wątek. Przykładowo mając 2 wątki \code{A} i \code{B} i współdzielony obiekt \code{MsgHandler x}:
 
 \begin{tabular}{l | l}
   \code{A} & \code{B}\\
@@ -74,11 +75,11 @@ Ostatnim z obowiązków klasy \cname{MsgHandler} jest zarządzanie kolejką wiad
 \end{tabular}
 
 \noindent
-w przypadku gdy w \vname{x} jest tylko 1 element, w zależności od kolejności wykonania instrukcji powyższy kod może być wykonany poprawnie, lub doprowadzić do załamania aplikacji, pomimo że zarówno \fname{isEmpty} jak i \fname{sendTop} są wykonywane jako sekcje krytyczne.
+w przypadku gdy w \vname{x} jest tylko 1 element, w zależności od kolejności wykonania wywołań. Dla kolejności AABB i BBAA powyższy kod może być wykonany poprawnie, jednak dla ABAB, BABA, ABBA i BAAB może doprowadzić do załamania aplikacji, pomimo że zarówno \fname{isEmpty} jak i \fname{sendTop} są wykonywane jako sekcje krytyczne.
 
 Kończąc, pozostaje zauważyć że jak na ironię jedynym elementem który nie jest dzielony między instancjami jest muteks który powinien chronić elementy współdzielone przed jednoczesnym dostępem. Obecnie nie spełnia on swojej roli.
 
-Klasa \cname{MsgHandler} będzie działała poprawnie tylko w środowisku jednowątkowym, jednak gdy dla danego obiektu wystąpią równoczesne odwołaniado \fname{send} obiekt klasy zacznie zachowywać się w sposób niezdefiniowany. Odbiór wiadomości jest przedstawiony za pomocą metody \fname{receive}.
+Powyższy kod skompiluje się, jednak klasa nie będzie działać. Błąd jest prosty, więc proponuję by czytelnik spróbował odszukać dlaczego, aby zrozumieć dlaczego zdecydowałem się napisać \tname{Resource}.
 
 Strukturę tego programu można szybko poprawić za pomocą globalnych repozytoriów zasobów i wrapperu \tname{Resource}. Pytaniem otwartym jest - co potraktujemy jako zasób? Aby to zrobić trzeba przeanalizować przypadki użycia i przepływ informacji. Wiemy że:
 \begin{itemize}
@@ -87,7 +88,8 @@ Strukturę tego programu można szybko poprawić za pomocą globalnych repozytor
 \item Każda z instancji \cname{MsgHandler} musi komunikować się z ostatnią skonfigurowanę \cname{MQClient}.
 \end{itemize}
 
-Wyłania się z tego obraz systemu muxującego (nie mylić z mutexem) z pamięcią. System muksujący kieruje wiele sygnałów wejściowych na jedno wyjście. Obec tego powinniśmy posiadać możliwość tworzenia nieograniczonej ilości instancji \cname{MQClient} i posiadać możliwość zarejestrowania 1 instancji jako wyjścia \cname{MsgHandler}. Moim zdaniem taki hub nie powinien móc współdzielić pamięci między swoimi instancjami więc subskrybcje i kolejka powinny być przechowywane lokalnie. Metody \cname{MsgHandler} będą wykonywane współbieżnie, więc instancje tej klasy traktować należy jako zasób.
+Wyłania się z tego obraz systemu muxującego (nie mylić z mutexem) z pamięcią. System muksujący kieruje wiele sygnałów wejściowych na jedno wyjście. Wobec tego powinniśmy posiadać możliwość tworzenia nieograniczonej ilości instancji \cname{MQClient} i posiadać możliwość zarejestrowania 1 instancji jako wyjścia \cname{MsgHandler}. Moim zdaniem taki hub nie powinien móc współdzielić pamięci między swoimi instancjami więc subskrybcje i kolejka powinny być przechowywane lokalnie. Metody \cname{MsgHandler} będą wykonywane współbieżnie, więc instancje tej klasy traktować należy jako zasób.
+\editNote{Z kolei \cname{MQClient} chcemy używać lokalnie dla wątku. Co jednak się stanie gdy zarejestrujemy obiekt w dwóch \cname{MsgHandler}? Jak poinformować \cname{MsgHandler} że obiekt przestał istnieć? Dostęp do \cname{MQClient} także należałoby przeprojektować.}{Trzeba zmodyfikować kod aby MsgHandler::setOutput() wykorzystywał shared\_ptr<Resource>}
 \includeCpp{../../examples}{MessageHandler-fix.hpp}
 \includeCpp{../../examples}{MessageHandler-fix.cpp}
 Co się zmieniło? Najważniejszą zmianą jest dodanie \fname{initializeMsgHandler} i \fname{accessMsgHandler} które przyjmują formę prostego repozytorium dla obiektów \cname{MsgHandler}.

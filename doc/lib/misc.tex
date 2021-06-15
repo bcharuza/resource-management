@@ -15,7 +15,7 @@
 \renewcommand\paragraph{%
   \@startsection{paragraph}{4}{0mm}%
                 {-\baselineskip}%
-                {0.5\baselineskip plus 0.2\baselineskip minus 0.2\baselineskip}%
+                {0.2\baselineskip plus 0.1\baselineskip minus 0.1\baselineskip}%
                 {\normalfont\normalsize\bfseries}}
 \makeatother
 
@@ -26,4 +26,5 @@
 \newcommand\vname[1]{\code{#1}}
 \newcommand\fname[1]{\code{#1()}}
 \newcommand\tname[1]{\code{#1<>}}
-\newcommand\lib[1]{\textbf{\smaller\{#1\}}}
+\newcommand\lib[1]{\mbox{\textbf{\smaller\{#1\}}}}
+\newcommand\file[1]{\mbox{\textbf{\smaller{#1}}}}

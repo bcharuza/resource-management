@@ -79,6 +79,12 @@ void MsgHandler::sendTop()const{
   m_client->send(getMessageQueue().top());
   getMessageQueue().popTop();
 }
+void
+MsgHandler::NotifyAll(Message const& msg)const{
+  lock_guard<mtx_t> lock{m_mtxLock};
+  for(auto& sub : getSubscriptions())
+    sub.m_cbFun(msg);
+}
 vector<Subscription>&
 MsgHandler::getSubscriptions(){
   static vector<Subscription> m_subs;
@@ -87,9 +93,4 @@ MsgHandler::getSubscriptions(){
 MsgQueue& MsgHandler::getMessageQueue(){
   static MsgQueue m_subs;
   return m_subs;
-}
-void
-MsgHandler::NotifyAll(Message const& msg)const{
-  for(auto& sub : getSubscriptions())
-    sub.m_cbFun(msg);
 }
