@@ -12,10 +12,10 @@ getMsgHandlerMap(){
 std::shared_ptr<Resource<MsgHandler>>
 accessMsgHandler(string const& n){
   return getMsgHandlerMap()
-    .critical_section([&n](auto& x){;
-	auto it = x.find(n);
-	return it == x.end()? nullptr : it->second;
-	});
+    .critical_section([&n](auto& x){
+			auto it = x.find(n);
+			return it == x.end()? nullptr : it->second;
+		      });
 }
 void setupMsgHandler(string const& n){
   if(auto i =make_unique<Resource<MsgHandler>>())
@@ -24,29 +24,31 @@ void setupMsgHandler(string const& n){
 	  x[n].reset(i.release());});
 }
 //MQClient
-MQClient::MQClient(string const& arg):
-  m_in{arg+".in"},m_out{arg+".out2"},m_name{arg}
+MQClient::MQClient(string const& arg,
+		   shared_ptr<Resource<MsgHandler>> const& m):
+  m_mux{m},
+  m_in{arg+".in"},
+  m_out{arg+".out2"}
 {}
-void MQClient::setHandler(string const& handler){
-  m_mux = accessMsgHandler(handler);
-  if(m_mux)
-    m_mux->critical_section([this](auto& x){;
-	x.setOutput(this);});
-}
-
 void MQClient::send(MessagePtr const& msg){
-  if(msg) m_out<<msg->text<<endl;
+  if(msg)
+    m_out.critical_section([&msg](auto&x){
+			     x<<msg->text<<endl;});
 }
 bool MQClient::receive(){
   auto msg = make_shared<Message>();
-  if(!msg || !m_in.good()) return false;
-  m_in >> msg->prio;
-  getline(m_in, msg->text);
-  if(!msg || !m_in.good()) return false;
-  if(m_mux)
-    m_mux->critical_section([&msg](auto& x){;
-	x.insert(msg);});
-  return true;
+  if(!msg) return false;
+  bool result =
+    m_in.critical_section([&msg](auto& x){
+			    if(!x.good()) return false;
+			    x >> msg->prio;
+			    getline(x, msg->text);
+			    return x.good();
+			  });
+  if(m_mux && result)
+    m_mux->critical_section([&msg](auto& x){
+			      x.insert(msg);});
+  return result;
 }
 //MsgQueue
 void MsgQueue::insert(MessagePtr const& msg){
@@ -68,7 +70,7 @@ MsgHandler::genNewId()noexcept{
   static std::atomic<uint32_t> id {0};
   return ++id;
 }
-void MsgHandler::setOutput(MQClient* c)noexcept{
+void MsgHandler::setOutput(shared_ptr<MQClient>const& c)noexcept{
   m_client = c;
 }
 MsgHandler::subid_t

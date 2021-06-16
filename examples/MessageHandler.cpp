@@ -3,7 +3,7 @@
 using namespace std;
 //MQClient
 MQClient::MQClient(string const& arg):
-  m_in{arg+".in"},m_out{arg+".out"},m_name{arg}
+  m_in{arg+".in"},m_out{arg+".out"}
 {}
 void MQClient::setHandler(MsgHandler* handler){
   m_handler = handler;

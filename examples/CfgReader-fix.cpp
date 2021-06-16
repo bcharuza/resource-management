@@ -8,6 +8,6 @@ void LoadCfg(string const& file){
     throw runtime_error("Can't open: "+file);
   getline(ifs, map["sys"]);
   getline(ifs, map["usr"]);
-  getCfg().critical_section([&map](auto& x){;
-      x = move(map);});
+  getCfg().critical_section([&map](auto& x){
+			      x = move(map);});
  }

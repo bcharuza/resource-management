@@ -16,15 +16,13 @@ void setupMsgHandler(std::string const&);
 
 using MessagePtr = std::shared_ptr<Message>;
 struct MQClient {
-  MQClient(std::string const&);
-  void setHandler(std::string const&);
+  MQClient(std::string const&,std::shared_ptr<Resource<MsgHandler>> const&);
   void send(MessagePtr const&);
   bool receive();
 private:
   std::shared_ptr<Resource<MsgHandler>> m_mux;
-  std::ifstream m_in;
-  std::ofstream m_out;
-  std::string m_name;
+  Resource<std::ifstream> m_in;
+  Resource<std::ofstream> m_out;
 };
 struct MsgQueue {
   void insert(MessagePtr const& msg);
@@ -42,12 +40,12 @@ struct MsgHandler
   bool isEmpty()const;
   void unsubscribe(subid_t);
   void sendTop();
-  void setOutput(MQClient* client) noexcept;
+  void setOutput(std::shared_ptr<MQClient>const&)noexcept;
 private:
   void NotifyAll(Message const& msg) const;
   static subid_t genNewId() noexcept;
 private:
-  MQClient* m_client;
+  std::shared_ptr<MQClient> m_client;
   std::map<subid_t,cb_t> m_subs;
   MsgQueue m_queue;
 };

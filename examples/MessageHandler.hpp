@@ -21,7 +21,6 @@ private:
   MsgHandler* m_handler = nullptr;
   std::ifstream m_in;
   std::ofstream m_out;
-  std::string m_name;
 };
 using cb_t = std::function<void(Message const&)>;
 struct Subscription {
