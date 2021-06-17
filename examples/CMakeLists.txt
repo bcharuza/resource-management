@@ -12,6 +12,7 @@ add_library( example STATIC
   )
 target_link_libraries(example PUBLIC Threads::Threads)
 target_include_directories(example PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_compile_features(example PRIVATE cxx_std_14)
 
 add_library( example-fix STATIC
   CfgReader-fix.cpp
@@ -24,3 +25,4 @@ add_library( example-fix STATIC
   )
 target_link_libraries(example-fix PUBLIC Threads::Threads)
 target_include_directories(example-fix PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_compile_features(example PRIVATE cxx_std_14)

@@ -1,9 +1,21 @@
 \section{Dodatki}\label{sec:extras}
-\paragraph{ResourceRef}
-\editNote{}{Opisać ResourceRef}
-\paragraph{Dostęp asymetryczny}
-\editNote{}{Opisać różne mutexy dla odczytu/zmiany}
+
 \paragraph{Rekurencja}
-\editNote{}{Muteksowanie w rekurencji}
+Wywołania rekurencyjne dla standardowych zasobów będą się samoistnie zakleszczać. Aby zezwolić na wielokrotne zajmowanie tego samego muteksu w jednym wątku, należy użyć \cname{std::recursive\_mutex}
+\begin{lstlisting}[language=C++,style=cpp-style,aboveskip=2mm]
+  template <typename T> using RResource
+  = Resource<T,std::recursive_mutex>
+\end{lstlisting}
+
 \paragraph{Równoczesne zajęcie 2 zasobów}
-\editNote{}{Informowanie o równoczesnym zajęciu 2 zasobów}
+Jednoczesne zajmowanie więcej niż jednego zasobu powoduje niepotrzebne obciążenia i może prowadzić do trudnych w wykryciu zakleszczeń. Aby zdiagnozować podwójne jednoczesne zajęcia zasobów? Można do klasy \tname{Resource} dostarczyć mutex owinięty w licznik ilości zastosowanych blokad w lokalnym wątku.
+\includeCpp{../../examples}{debug-mutex.hpp}
+Następnie taki muteks można wykorzystać przy definiowaniu
+\begin{lstlisting}[language=C++,style=cpp-style,aboveskip=2mm]
+  template <typename T> using DebugResource
+  = Resource<T,DebugMutex<std::mutex>>
+\end{lstlisting}
+
+\paragraph{Dostęp asymetryczny}
+Dostęp asymetryczny można zrealizować bardzo podobnie przy użyciu \cname{std::shared\_mutex} i lekko modyfikując \tname{Resource}
+\includeCpp{../../examples}{AsymResource.hpp}

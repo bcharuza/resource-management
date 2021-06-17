@@ -52,10 +52,11 @@
   morekeywords={int,void,bool,long,short,signed,unsigned,char,float,double},
   morekeywords={int8\_t,int16\_t,int32\_t,uint8\_t,uint16\_t,uint32\_t,time\_t,va\_list},
   morekeywords={std,chrono},
+  morekeywords={runtime\_error},
   morekeywords={system\_clock,seconds,minutes,hours,milliseconds,microseconds},
-  morekeywords={atomic,mutex,lock\_guard},
+  morekeywords={atomic,mutex,lock\_guard,shared\_lock,shared\_timed\_mutex},
   morekeywords={string,ostream,istream,ifstream,ofstream,fstream},
-  morekeywords={map,vector,deque},
+  morekeywords={vector,deque},
   morekeywords={shared\_ptr,unique\_ptr,weak\_ptr,function},
   morekeywords={cout,cin,cerr,endl,flush},
   keywordstyle=\color{violet},
@@ -66,9 +67,8 @@
 \newcommand\includeCpp[2]{\noindent\lstinputlisting[language=C++,style=cpp-style,captionpos=t,title=\scriptsize#2]{#1/#2}}
 \newcommand\includeText[2]{\noindent\lstinputlisting[captionpos=t,style=cpp-style,title=\scriptsize#2]{#1/#2}}
 
-\newcommand\inlineBash[1]{\colorbox{backcolour}{\lstinline[language=bash,style=cpp-style,frame=lines]{$> #1}}}
-
-\newcommand\inlineCpp[1]{\colorbox{backcolour}{\lstinline[language=C++,style=cpp-style]{#1}}}
+\newcommand\inlineBash[1]{\lstinline[language=bash,style=cpp-style,frame=lines]{$> #1}}
+\newcommand\inlineCpp[1]{\lstinline[language=C++,style=cpp-style]{#1}}
 
 \titleformat{\section}{\normalfont\large\bfseries}{\thesection.}{1em}{}
 \titleformat{\subsection}{\normalfont\normalsize\itshape}{\thesubsection.}{1em}{}
