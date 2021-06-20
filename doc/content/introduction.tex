@@ -1,7 +1,11 @@
 \section{Wstęp}\label{sec:introduction}
 \paragraph{Dlaczego napisałem ten artykuł?}
-Nie lubię debugować i debuggerów w ogóle. Nie znam gorszego losu, niż debugowanie aplikacji wielowątkowych. Gdy siedzę przed debuggerem czuję się jak kot goniący laserową kropkę drwiącego ze mnie absolutu - z tym że kot dobrze się przy tym bawi.
-Pewnego pięknego październikowego ranka dostałem zwrot ,,XYZ czasami nie działa'' to oznaczało, że czeka mnie kilka dni przedniej zabawy - moje autystyczne rand ez-vous z debuggerem i tysiącami linii kodu. Błędem okazało się użycie niewłaściwego muteksu - Straciłem 2 dni życia na prosty błąd. To był punkt przełomowy. Cisnąłem ,,Tak być nie może!'' i przepisałem tę bibliotekę. \note{Frustracja to potężna muza - przykładowo niedziałająca drukarka zmieniła losy świata.}{\link{https://en.wikipedia.org/wiki/Richard\_Stallman\#Events\_leading\_to\_GNU}}
+Historia tego artykułu miała początek pewnego pięknego październikowego ranka, krótko po załączeniu komputera otrzymałem radosne przywitanie. ,,Hello. How are you?''.\\
+Poniżej czaiły się 3 kropki grozy\\
+...\\
+\\
+,,Sometimes X doesn't work'' - oto mój bilet na autystyczne randez-vous z tysiącami linii kodu.
+,,Sometimes'' jest szczególnie złowieszczym słowem, gdyż ujawnia wyścig - teraz będę  godzinami gonił czerwoną kropkę drwiącego losu. Po 2 dniach galerniczej przygody odkryłem skarb! Wyścig był powodowany zajęciem niewłaściwego muteksu. Nastąpił przełom - \note{niczym oporna drukarka, która zmieniła losy świata}{\link{https://en.wikipedia.org/wiki/Richard\_Stallman\#Events\_leading\_to\_GNU}}, ten niedziałający muteks zmobilizował mnie do przepisania biblioteki i napisania serii artykułów.
 
 \paragraph{Kto jest adresatem?}
 Programiści \Cpp{}, od juniora który może znaleźć inspirację, po seniora który może chcieć wymagać podobnych rozwiązań w swoim projekcie. Zakładam że czytelnik posiada podstawową znajomość \Cpp{14} i wiedzę z zakresu przetwarzania wielowątkowego z użyciem mutexów biblioteki standardowej.

@@ -1,5 +1,5 @@
 \section{Abstrakcja zasobu}\label{sec:resource}
-Dlaczego zasoby sprawiają tyle problemów? Ponieważ są wyjątkowe i w przeciwieństwie do informacji - niepomnażalne. Dla przykładu, ten artykuł można rozesłać do milionów urządzeń bez żadnych strat dla oryginalnej treści - będzie ona nieodróżnialna, jednak moje odręczne notatki są wyjątkowe, niepowtarzalne, a przy próbie przesłania ich do każdego z czytelników prawdopodobnie nigdy nie dotarłyby do ostatniego w kolejce.
+Dlaczego zasoby sprawiają tyle problemów? Ponieważ są wyjątkowe i w przeciwieństwie do informacji - niepomnażalne. Dla przykładu, ten artykuł można rozesłać do milionów urządzeń bez żadnych strat dla oryginalnej treści - będzie ona nieodróżnialna. W przeciwieństwie do treści moje odręczne notatki (a dokładnie kartki papieru i naniesiony na nie grafit) są wyjątkowe, niepowtarzalne. Przy próbie przesłania ich do każdego z czytelników prawdopodobnie nigdy nie dotarłyby do ostatniego w kolejce.
 
 Dokładnie - w kolejce - przy próbie jednoczesnego dostępu moje notatki skończyłaby nie lepiej niż zdobycz w corocznej bitwie o karpia. Oczywiście my - programiści - z racji chronicznych niedostatków tkanki mięśniowej jesteśmy zmuszeni do zaniechania brutalnej rywalizacji na rzecz usystematyzowanych reguł dostępu. Wg. etykiety czekamy aż zasób będzie dostępny - rezerwujemy go - używamy - i udostępniamy pozostałym gdy skończymy. W skrócie stosujemy dostęp wykluczający - mutexy.
 
@@ -10,7 +10,7 @@ Dokładnie - w kolejce - przy próbie jednoczesnego dostępu moje notatki skońc
 \item powodują wzajemne wykluczenie wątków -- łatwo stają się wąskim gardłem aplikacji.
 \item uwielbiają się zakleszczać na wszelkie możliwe sposoby.
 \end{itemize}
-Pomimo powyższych wad posiadają 2 ogromne zalety - są proste w obsłudze i wszechstronne. Zrozumienie mechanizmu muteksu zajmuje kilka minut, po których świeżo upieczony absolwent może zostać posłany na front walki o informatyzację kraju.
+Posiadają jednak 2 ogromne zalety - są proste w obsłudze i wszechstronne. Zrozumienie mechanizmu muteksu zajmuje kilka minut, po których świeżo upieczony absolwent może zostać posłany na front walki o informatyzację kraju.
 
 \paragraph{Resource}
 \tname{Resource} jest krótkim szablonem który obmyśliłem jako metodę systematyzacji zarządzania zasobami przy pomocy mutexów. Szablon powstał na mój własny użytek podczas refaktoryzacji kodu jednej z bibliotek komunikacji sieciowej. Ma on na celu silnie związać zasób z osłaniającym go mutexem, zautomatyzować zajmowanie i zwalnianie zasobu, i stanowić ramę popychającą użytkownika w kierunku poprawnych metod dostępu.
@@ -21,7 +21,10 @@ Klasa ma jedno przeznaczenie - zarządzanie dostępem do zasobu.
 
 Szablon posiada 2 argumenty: \cname{T} -- Przechowywany typ zasobu, i \cname{M} -- typ mutexu.
 
-Dostępny jest tylko konstruktor forwardujący - aby zrozumieć tę konstrukcję należy zapoznać się z pojęciami \note{idealnego przekazywania}{\link{https://eli.thegreenplace.net/2014/perfect-forwarding-and-universal-references-in-c}} i \note{tzw. uniwersalnych referencji}{\link{https://www.youtube.com/watch?v=wQxj20X-tIU}} - w skrócie polega to na tym że nasza klasa \tname{Resource} jest wrapperem przezroczystym dla klasy przechowywanej. Możemy prosto zdefiniować \inlineCpp{Resource<vector<int> > v \{1,2,3,4,5\}} tak jakby wrapper \cname{Resource} nie istniał.
+Dostępny jest tylko konstruktor forwardujący - aby zrozumieć tę konstrukcję należy zapoznać się z pojęciami \note{idealnego przekazywania}{\link{https://eli.thegreenplace.net/2014/perfect-forwarding-and-universal-references-in-c}} i \note{tzw. uniwersalnych referencji}{\link{https://www.youtube.com/watch?v=wQxj20X-tIU}} - w skrócie polega to na tym że nasza klasa \tname{Resource} jest wrapperem przezroczystym dla klasy przechowywanej. Możemy prosto inicjować instancje tak jakby wrapper \cname{Resource} nie istniał.
+\begin{lstlisting}[language=C++,style=cpp-style,aboveskip=2mm]
+  Resource<vector<int>> v {1,2,3,4,5}
+\end{lstlisting}
 
 Konstruktory kopiujące i przypisania są jawnie usunięte z 3 powodów:
 \begin{itemize}
