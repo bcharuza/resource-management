@@ -1,14 +1,14 @@
 \section{Wstęp}\label{sec:introduction}
 \paragraph{Dlaczego napisałem ten artykuł?}
-Historia tego artykułu miała początek pewnego pięknego październikowego ranka, krótko po załączeniu komputera otrzymałem radosne przywitanie. ,,Hello. How are you?''.\\
-Poniżej czaiły się 3 kropki grozy\\
+Historia tego artykułu miała początek pewnego pięknego październikowego ranka, krótko po załączeniu komputera otrzymałem w komunikatorze radosne przywitanie: ,,Hello. How are you?''.\\
 ...\\
-\\
-,,Sometimes X doesn't work'' - oto mój bilet na autystyczne randez-vous z tysiącami linii kodu.
-,,Sometimes'' jest szczególnie złowieszczym słowem, gdyż ujawnia wyścig - teraz będę  godzinami gonił czerwoną kropkę drwiącego losu. Po 2 dniach galerniczej przygody odkryłem skarb! Wyścig był powodowany zajęciem niewłaściwego muteksu. Nastąpił przełom - \note{niczym oporna drukarka, która zmieniła losy świata}{\link{https://en.wikipedia.org/wiki/Richard\_Stallman\#Events\_leading\_to\_GNU}}, ten niedziałający muteks zmobilizował mnie do przepisania biblioteki i napisania serii artykułów.
+Tajemnicze 3 kropki przybrały ostateczną formę.\\
+,,Sometimes X doesn't work'' - Gratulacje! Zdobyłeś główną nagrodę - autystyczne randez-vous z tysiącami linii kodu! Podekscytowany nadchodzącą przygodą zaparzyłem herbatę. W ramach dykresji dodam że wolę spędzić 2 godziny na pisaniu testów niż 1 na debugowaniu. Lubię gdy coś dzieje się ,,Always'' lub ,,Never'' - to takie pięne matematyczne sformułowania, natomiast ,,Sometimes'' budzi we mnie grozę - ,,Sometimes'' oznacza zachowania niezdefiniowane.
+
+Po 2 dniach galerniczej przygody odkryłem skarb - wyścig powodowany zajęciem niewłaściwego muteksu. Ten niedziałający muteks był \note{niczym oporna drukarka, która zmieniła losy świata}{\link{https://en.wikipedia.org/wiki/Richard\_Stallman\#Events\_leading\_to\_GNU}}. ,,Tak dalej być nie może'' postanowiłem i przepisałem tę bibliotekę. Jest to pierwsza relacja z mojej walki.
 
 \paragraph{Kto jest adresatem?}
-Programiści \Cpp{}, od juniora który może znaleźć inspirację, po seniora który może chcieć wymagać podobnych rozwiązań w swoim projekcie. Zakładam że czytelnik posiada podstawową znajomość \Cpp{14} i wiedzę z zakresu przetwarzania wielowątkowego z użyciem mutexów biblioteki standardowej.
+Programiści \Cpp{} - od juniora który może poznać techniki korzystania z muteksów, po seniora który może zechcieć zastosować podobne rozwiązania w swoim projekcie. Zakładam że czytelnik posiada podstawową znajomość \Cpp{14} i wiedzę z zakresu przetwarzania wielowątkowego z użyciem mutexów biblioteki standardowej.
 
 \paragraph{Jaki jest zakres artykułu?}
 Publikacja prezentuje wzorzec \tname{Resource} i przypadki użycia. Omawiane będą kontrprzykłady, zagadnienia inicjacji i dostępu do zasobów. Nie opisuję narzędzi, ani podstaw wielowątkowości. Większość poruszanych tematów będzie związana z wykorzystaniem wspomnianego wzorcu.

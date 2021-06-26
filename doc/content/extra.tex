@@ -8,7 +8,7 @@ Wywołania rekurencyjne dla standardowych zasobów będą się samoistnie zakles
 \end{lstlisting}
 
 \paragraph{Równoczesne zajęcie 2 zasobów}
-Jednoczesne zajmowanie więcej niż jednego zasobu powoduje niepotrzebne obciążenia i może prowadzić do trudnych w wykryciu zakleszczeń. Aby zdiagnozować podwójne jednoczesne zajęcia zasobów? Można do klasy \tname{Resource} dostarczyć mutex owinięty w licznik ilości zastosowanych blokad w lokalnym wątku.
+Jednoczesne zajmowanie więcej niż jednego zasobu powoduje niepotrzebne obciążenia i może prowadzić do trudnych w wykryciu zakleszczeń. Jak zdiagnozować podwójne jednoczesne zajęcia zasobów? Można do klasy \tname{Resource} dostarczyć mutex owinięty w licznik ilości zastosowanych blokad w lokalnym wątku.
 \includeCpp{../../examples}{debug-mutex.hpp}
 Następnie taki muteks można wykorzystać przy definiowaniu
 \begin{lstlisting}[language=C++,style=cpp-style,aboveskip=2mm]
