@@ -7,7 +7,6 @@
 \newcommand\setAuthor[1]{\author{#1}\def\authorName{#1}}
 \newcommand\authorPhoto[1]{\def\authorPhoto{#1}}
 \newcommand\authorPosition[1]{\def\authorPosition{#1}}
-\newcommand\authorProject[1]{\def\authorProject{#1}}
 \newcommand\authorWebpage[1]{\def\authorWebpage{#1}}
 \newcommand\authorEmail[1]{\def\authorEmail{#1}}
 
@@ -17,12 +16,11 @@
 
 \newcommand\printAuthor{%
 \setlength\tabcolsep{0pt}%
-\begin{tabular}{p{.85\textwidth}p{5\baselineskip}}
-\Large\getAuthor & \multirow{5}{*}{\includegraphics[height=5\baselineskip]{\authorPhoto}}\\
-\footnotesize\authorPosition &\\
-\footnotesize{Projekt \authorProject} & \\
-\footnotesize\authorWebpage & \\
-\footnotesize\mail{\authorEmail} &\\
+\begin{tabular}{p{.89\textwidth}p{.10\textwidth}p{.01\textwidth}}
+\Large\getAuthor & \multirow{4}{*}{\includegraphics[height=4.1\baselineskip]{\authorPhoto}} &\\
+\footnotesize\authorPosition & &\\
+\footnotesize\authorWebpage & & \\
+\footnotesize\mail{\authorEmail} & &\\
 \end{tabular}
 }
 \newcommand\printTitle{\center{\mbox{\Huge\bf{\getTitle}}}}

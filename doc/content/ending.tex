@@ -1,9 +1,9 @@
 \section{Podsumowanie}
 Powyżej zaprezentowałem gamę problemów występujących w kodzie produkcyjnym i metody do ich ominięcia. Rozwiązania prezentuję jako doraźne, które mogą być użyte przez szeroką gamę programistów bez większego doświadczenia w aplikacjach wielowątkowych. Zwykle sprowadzają się one do 4 punktów:
 \begin{enumerate}
-\item użyj wrapperu \tname{Resource} automatyzującego dostęp do zasobu
-\item umieszczaj zasoby w globalnych repozytoriach z dostępem przez funkcję globalną.
-\item jeśli możesz, oblekaj obiekty współdzielone w interface'y atomowe
-\item unikaj pól statycznych, jeśli są patrz pkt 1 i 2.
+\item Użyj wrapperu \tname{Resource} automatyzującego dostęp do zasobu
+\item Umieszczaj zasoby w globalnych repozytoriach z dostępem przez funkcję globalną.
+\item Jeśli możesz, oblekaj obiekty współdzielone w interface'y atomowe
+\item Unikaj danych statycznych. Jeśli są - patrz pkt 1 i 2.
 \end{enumerate}
 
