@@ -20,9 +20,10 @@ set_tests_properties(copyCfg copyInput PROPERTIES FIXTURES_SETUP testEnv)
 
 message("Test: example-test")
 add_test(NAME example-test
-  COMMAND example-test config.cfg test1 test2
+  COMMAND ${CMAKE_COMMAND} -DEXPECTED_TIMEOUT=8 -DWORK_DIR="${CMAKE_CURRENT_BINARY_DIR}" -DTEST_EXE=example-test -DARG1=config.cfg -DARG2=test1 -DARG3=test2 -P ${CMAKE_CURRENT_LIST_DIR}/FailTest.cmake
   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-  )
+)
+
 message("Test: example-fix-test")
 add_test(NAME example-fix-test
   COMMAND example-fix-test config.cfg test1 test2
